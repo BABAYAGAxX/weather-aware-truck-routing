@@ -14,7 +14,6 @@ export interface Checkpoint {
   lon: number
   eta: string
   wind_mph: number
-  gust_mph: number
   rain_in_hr: number
   snow_in_hr: number
   risk: number
@@ -63,8 +62,7 @@ async function getJson<T>(url: string, init?: RequestInit): Promise<T> {
   let response: Response
   try {
     response = await fetch(url, init)
-  } catch (error) {
-    if (init?.signal?.aborted) throw error // a cancelled request is not a failure to report
+  } catch {
     throw new Error('Cannot reach the server. Check your connection and try again.')
   }
   const body = await response.json().catch(() => null)

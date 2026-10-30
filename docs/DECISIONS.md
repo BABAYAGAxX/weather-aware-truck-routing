@@ -32,7 +32,7 @@ Load rules apply to wind only and can only raise a level:
 
 Load limits are strict: exactly 30,000 lb or 40,000 lb is not affected.
 
-Wind means sustained wind at 10 m. Gusts are shown for information only.
+Wind means sustained wind at 10 m.
 
 ## Route recommendation
 
@@ -73,14 +73,15 @@ One interval applies to all routes on a trip, otherwise their miles are not
 comparable. A 50 mi interval can miss a narrow storm, which is why the user can
 override it and why the heatmap covers the whole corridor.
 
-A chosen interval is refused, with a message, if the search would need more than 500
+A chosen interval is refused, with a message, if the search would need more than 550
 weather locations. Measured on six real trips (five with three routes, San Diego to
 Bangor with one): 10 mi fit on the three trips up to 1,338 mi (495 locations on
-Chicago to Denver, close to the limit) and on the single-route 3,307 mi trip (442),
-but was refused on the two three-route cross-country trips (1,016 and 1,055). 25 mi
-fit on every trip except those two (505 and 529 locations). Single-route trips count
-lower than three-route trips of the same length. Auto needed at most 345 locations on
-all six trips, up to 3,556 mi, so it stays under the limit. If Auto or 50 mi is ever
+Chicago to Denver) and on the single-route 3,307 mi trip (442), but was refused on the
+two three-route cross-country trips (1,016 and 1,055). 25 mi now fits on all six
+trips, including those two (505 and 529 locations). Open-Meteo allows 600 locations a
+minute, so 550 leaves some room. Single-route trips count lower than three-route trips
+of the same length. Auto needed at most 345 locations on all six trips, up to
+3,556 mi, so it stays under the limit. If Auto or 50 mi is ever
 over, the message says the trip is too long instead of asking for a wider interval,
 because 50 mi is already the widest. We refuse instead of silently widening because
 the user made an explicit choice.
@@ -98,8 +99,9 @@ the user made an explicit choice.
 - Trips longer than 48 hours still get a forecast at every checkpoint. The slider
   stays at the 0 to 48 hours the brief asks for. Hour 0 is the departure time, and
   the slider label shows the clock time.
-- Departure can be now or up to 10 days ahead. We fetch 14 days of forecast, which
-  leaves about 3 days after the latest departure. The longest route tested took 51 hours.
+- Departure can be now (a time up to an hour in the past is treated as now) or up to
+  10 days ahead. We fetch 14 days of forecast, which leaves about 3 days after the
+  latest departure. The longest route tested took 51 hours.
 - A time outside the forecast is an error. It is never treated as Low.
 - Driver rest breaks are not modelled, so ETAs are continuous driving time.
 
@@ -127,16 +129,16 @@ minute, 5,000 an hour and 10,000 a day. Three things keep us inside it:
 
 - **Shared forecast squares.** Each location is rounded to a fixed grid, 0.1 degrees
   for checkpoints, so nearby points share one forecast.
-- **A 30 minute cache per square.** Changing the load, departure or interval needs no
-  new weather calls.
-- **A limit of 500 locations a search.**
+- **A 30 minute cache per square.** Changing the load or departure needs no new weather
+  calls, and changing the interval reuses every square already fetched.
+- **A limit of 550 locations a search.**
 
 If Open-Meteo still refuses a request, the user sees "try again in a minute".
 
 ## Providers
 
 - Routing and address search: TomTom truck routing. It returned 3 routes on 13 trips
-  tested, from 8 to 3,337 mi, and only 1 on San Diego to Bangor. TomTom's other route
+  tested, from 8 to 3,556 mi, and only 1 on San Diego to Bangor. TomTom's other route
   modes timed out on that trip, so we do not force extra routes. When it returns
   fewer, the UI shows them and says "Only 1 route found". Long trips can take up to
   about 25 s end to end (TomTom alone took 19.0 s on Seattle to Miami), so the routing

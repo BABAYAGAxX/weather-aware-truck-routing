@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 from .risk import RiskLevel
 
-INTERVALS_MILES = (10, 25, 50)
 AUTO_10_MI_BELOW = 250
 AUTO_25_MI_UP_TO = 750
 
@@ -47,8 +46,6 @@ def covered_miles(miles: Sequence[float]) -> list[float]:
 
     Example: [0, 50, 80] -> [25, 40, 15]
     """
-    if len(miles) == 1:
-        return [0.0]
     edges = [miles[0], *((a + b) / 2 for a, b in zip(miles, miles[1:])), miles[-1]]
     return [end - start for start, end in zip(edges, edges[1:])]
 
