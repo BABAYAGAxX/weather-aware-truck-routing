@@ -95,7 +95,8 @@ the user made an explicit choice.
 - Each checkpoint uses the forecast hour nearest its ETA, with no interpolation. A time
   exactly on the half hour goes to the later hour, so consecutive slider hours always
   read consecutive forecast hours.
-- Rain is `rain + showers`. Snow is `snowfall`. They are rated separately.
+- Rain is `rain + showers`, rounded to 3 decimals so a sum lands exactly on a band edge.
+  Snow is `snowfall`. They are rated separately.
 - Trips longer than 48 hours still get a forecast at every checkpoint. The slider
   stays at the 0 to 48 hours the brief asks for. Hour 0 is the departure time, and
   the slider label shows the clock time.
@@ -129,8 +130,8 @@ minute, 5,000 an hour and 10,000 a day. Three things keep us inside it:
 
 - **Shared forecast squares.** Each location is rounded to a fixed grid, 0.1 degrees
   for checkpoints, so nearby points share one forecast.
-- **A 30 minute cache per square.** Changing the load or departure needs no new weather
-  calls, and changing the interval reuses every square already fetched.
+- **A 30 minute cache per square.** Changing the load, departure or interval reuses
+  every square already fetched, so only squares not seen yet need a new call.
 - **A limit of 550 locations a search.**
 
 If Open-Meteo still refuses a request, the user sees "try again in a minute".

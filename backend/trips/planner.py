@@ -71,8 +71,8 @@ def _checkpoint(stop: tuple[float, Point, datetime], forecasts: dict[Point, Fore
         "lon": round(position[1], 5),
         "eta": _iso(eta),
         "wind_mph": round(weather.wind_mph, 2),
-        "rain_in_hr": round(weather.rain_in_hr, 2),
-        "snow_in_hr": round(weather.snow_in_hr, 2),
+        "rain_in_hr": round(weather.rain_in_hr, 3),
+        "snow_in_hr": round(weather.snow_in_hr, 3),
         "risk": int(classify_checkpoint(weather, load_lb)),
         "cause": checkpoint_cause(weather, load_lb),
     }

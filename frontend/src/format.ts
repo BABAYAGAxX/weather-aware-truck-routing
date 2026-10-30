@@ -1,5 +1,4 @@
 // Text formats shared by the route cards and the map popups.
-const DATE_AND_TIME = { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' } as const
 
 export function formatDuration(seconds: number): string {
   const minutes = Math.round(seconds / 60)
@@ -7,7 +6,7 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatEta(iso: string): string {
-  return new Date(iso).toLocaleString([], { ...DATE_AND_TIME, timeZoneName: 'short' })
+  return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }
 
 // Like "+6 h, Sat 8:00 PM PDT". Adding to the timestamp is UTC math; only the text is local.

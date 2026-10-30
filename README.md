@@ -7,6 +7,8 @@ route. Everything is drawn on a map, with a heatmap and a 0 to 48 hour forecast 
 
 **Live app:** TBD after deployment
 
+**Loom walkthrough:** TBD
+
 ## Run it locally
 
 You need Python 3.12, Node.js, and a free [TomTom developer key](https://developer.tomtom.com/).
@@ -109,8 +111,8 @@ The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and w
 8. **Caching and the weather budget.** Open-Meteo's free tier counts locations, not
    requests (600 a minute). Nearby points share one forecast square, each square is
    cached for 30 minutes, and a search that needs more than 550 locations is refused
-   with a message asking for a wider interval. Changing the load or departure needs no
-   new weather calls, and changing the interval reuses every square already fetched.
+   with a message asking for a wider interval. Changing the load, departure or interval
+   reuses every square already fetched, so only squares not seen yet need a new call.
 
 ## Known limits
 

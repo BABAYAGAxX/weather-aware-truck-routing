@@ -5,8 +5,9 @@
 > points: Task 4 timeout 15 (now 30 for routing, 15 for search); Task 6 "every 10th point"
 > (now every 5th); Task 2 reason "against the runner-up" (now against the fastest route);
 > Task 11 global state and hour-in-MapView (now feature state and `HourSlider.tsx`);
-> `MAX_LOCATIONS = 500` (now 550, Task 13). Tasks 1 to 12 are complete, and Task 13 is the
-> review pass.
+> `MAX_LOCATIONS = 500` (now 550, Task 13). Task 13 supersedes every earlier mention of
+> `snap(point, step)` (now `snap(point)`), gusts (removed), the risk bar (removed) and
+> `INTERVALS_MILES` (removed). Tasks 1 to 12 are complete, and Task 13 is the review pass.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -387,8 +388,7 @@ def test_places_needs_two_characters(client):
 
 ### Task 13: Review pass changes
 
-The four review reports are in `.superpowers/sdd/2026-10-30-weather-aware-truck-routing/review-pass-reports.md`.
-The chair's rulings are in the handback message that accompanied this task. Everything below
+The four review reports and the chair's rulings are not in the repo. Everything below
 was accepted; nothing else from the reports is to be done. The code is finished and reviewed,
 so make each edit exactly as written, run the tests after each step, and do not refactor
 around it. Do not reopen: strict ranking, Auto plus 10/25/50, faint green squares, refusing an
@@ -408,9 +408,9 @@ clause, the geometry clamps, `if total`, the two-adapter error pattern.
 - Changes: `Forecast.weather_at(when) -> Weather` (no gust). `snap(point: Point) -> Point` (no step). Checkpoint JSON loses `gust_mph`. `MAX_LOCATIONS = 550`.
 - Removes: `formatArrival`, `INTERVALS_MILES`, the risk bar, `latestRequest`.
 
-- [ ] **Step 1: Baseline.** Run `cd backend && .venv/Scripts/python -m pytest -q`. Expected: 122 passed. Run `cd frontend && npm run build && npm run lint`. Expected: clean.
+- [x] **Step 1: Baseline.** Run `cd backend && .venv/Scripts/python -m pytest -q`. Expected: 122 passed. Run `cd frontend && npm run build && npm run lint`. Expected: clean.
 
-- [ ] **Step 2: Logic fixes (backend).**
+- [x] **Step 2: Logic fixes (backend).**
   - `weather.py:84`: `rain=[round(rain + showers, 3) for ...]`. Floats added as 3-decimal values can land just under a band edge (0.01 + 0.09 is 0.0999..., which is Low). Add to `tests/test_weather.py`, after `test_fetch_reads_a_list_or_a_single_object`:
     ```python
     def test_rain_plus_showers_is_rounded_so_a_band_edge_is_not_missed(monkeypatch):
@@ -423,7 +423,7 @@ clause, the geometry clamps, `if total`, the two-adapter error pattern.
   - `planner.py:29`: `MAX_LOCATIONS = 550`. Open-Meteo allows 600 locations a minute and 590 passed live; 550 lets the brief's 25 mi option work on the two measured cross-country trips (505 and 529 locations). `tests/test_planner.py:125`: patch to `550`. `tests/test_planner.py:41` comment: "over 550 locations".
   - Delete `tests/test_planner.py:90-93` (`test_interval_refused_over_budget_whatever_is_cached`); `test_chosen_interval_over_budget_asks_for_a_wider_one` asserts the same and more.
 
-- [ ] **Step 3: Remove gusts.** The brief rates sustained wind only, and a high gust beside "Risk: Low" reads as a contradiction.
+- [x] **Step 3: Remove gusts.** The brief rates sustained wind only, and a high gust beside "Risk: Low" reads as a contradiction.
   - `weather.py`: remove the `gust` field (line 32) and `gust=hourly["wind_gusts_10m"]` in `_parse`; `hourly` becomes `"wind_speed_10m,rain,showers,snowfall"`; `weather_at` returns `Weather(self.wind[hour], self.rain[hour], self.snow[hour])` with type `-> Weather` and docstring "Weather for the hour nearest to `when`...".
   - `planner.py`: line 68 `weather = forecasts[snap(position)].weather_at(eta)` (see Step 5 for `snap`); delete line 75 (`gust_mph`); line 89 drop the `[0]`.
   - `tests/test_weather.py`: `forecast()` drops the `[20.0] * hours` argument; `_location` drops `"wind_gusts_10m"`; every `weather_at(...)[0]` becomes `weather_at(...)`; line 87 becomes `assert result.weather_at(result.start).wind_mph == 5.0`.
@@ -431,7 +431,7 @@ clause, the geometry clamps, `if total`, the two-adapter error pattern.
   - `frontend/src/api.ts`: delete `gust_mph`. `mapPopups.ts`: delete the `Gust` row.
   - `docs/DECISIONS.md:35`: delete "Gusts are shown for information only." `docs/DESIGN.md:119`: delete `"gust_mph": 27.0,`.
 
-- [ ] **Step 4: Display and dead code.**
+- [x] **Step 4: Display and dead code.**
   - `mapPopups.ts:47`: `${point.wind_mph.toFixed(1)} mph`. Rounding showed 54.6 mph as "55 mph" beside "Severe", which contradicts the brief's table.
   - `ranking.py`: delete line 8 (`INTERVALS_MILES`, unused) and lines 50-51 (`if len(miles) == 1: return [0.0]`; the edges formula already returns `[0.0]` for one checkpoint, verified).
   - `api.ts:67`: delete the `if (init?.signal?.aborted) throw error` line. `PlaceField` ignores every result after a cancel, so the line never changed anything. The lint then flags the unused name, so `catch (error)` becomes `catch`.
@@ -439,7 +439,7 @@ clause, the geometry clamps, `if total`, the two-adapter error pattern.
   - `TripForm.tsx:79`: `onChange={(_, next: Interval | null) => { if (next !== null) setSpacing(next) }}` (one line if the formatter allows).
   - `config/settings.py:76-81`: delete the `LOGGING` block and its comment. Verified: with Django's defaults and gunicorn without a log config, the `httpx` logger is already below INFO, so the block changed nothing. `docs/DESIGN.md:151`: "Settings from environment variables and CORS".
 
-- [ ] **Step 5: Simplify `snap`.** Verified on 200,000 random US points: `snap(p, 0.1)` equals `(round(lat, 1), round(lon, 1))`.
+- [x] **Step 5: Simplify `snap`.** Verified on 200,000 random US points: `snap(p, 0.1)` equals `(round(lat, 1), round(lon, 1))`.
   - `geometry.py:52-54`:
     ```python
     def snap(point: Point) -> Point:
@@ -450,17 +450,17 @@ clause, the geometry clamps, `if total`, the two-adapter error pattern.
   - `planner.py`: delete line 30 (`CHECKPOINT_GRID_DEG`); lines 68 and 138 call `snap(position)`.
   - `tests/test_geometry.py:18-20`: one assert, `snap((32.77, -96.79)) == (32.8, -96.8)`. Rename line 6 to `test_point_at_fraction_stays_on_route` (it never tested a clamp).
 
-- [ ] **Step 6: Remove the risk bar and the stale-request guard (frontend).**
+- [x] **Step 6: Remove the risk bar and the stale-request guard (frontend).**
   - `RouteCards.tsx`: delete `coveredMiles` and `describeBar` (lines 18-37), `const widths = ...` (line 72) and the bar `Box` (lines 115-124). Drop `Checkpoint` from the `../api` import. `RISK_COLORS` stays (used by `RiskMiles`). The cards keep the reason, the three mile counts and the average, and the map's checkpoint dots show where the risk sits.
   - `App.tsx`: delete `latestRequest` (line 20) and `mine` (line 23), the two `if (mine !== latestRequest.current) return` lines, and make `finally` plain `setLoading(false)`. Drop `useRef` from the import. The submit button is disabled while loading, and a disabled default button also blocks Enter.
   - `docs/DESIGN.md:166`: "Summaries and the why". `docs/DESIGN.md:163`: "Duration and time text".
 
-- [ ] **Step 7: Docs.**
+- [x] **Step 7: Docs.**
   - `docs/DECISIONS.md`: lines 76-86 and 132, replace 500 with 550 and say 25 mi now fits on the two cross-country trips (505 and 529) while 10 mi is still refused there (1,016 and 1,055); line 101 add "(a time up to an hour in the past is treated as now)"; lines 130-131 become "**A 30 minute cache per square.** Changing the load or departure needs no new weather calls, and changing the interval reuses every square already fetched."; line 139 "8 to 3,556 mi".
   - `docs/DESIGN.md`: line 18 "8 to 3,556 mi"; lines 23, 54 and 66-80 replace 500 with 550 and mark 25 mi on the two cross-country rows as fitting; line 217 "Repo and hosting per README, Loom video linked from README"; add `| src/components/MapUnavailable.tsx | Message when the map cannot load |` to the frontend table.
   - `README.md`: line 33 "To run the backend tests: `python -m pytest`." (no count); lines 68-70 the CORS symptom is "address search shows 'Address search is unavailable' and Find routes shows 'Cannot reach the server'"; Railway steps: generate the public domain before adding `DJANGO_ALLOWED_HOSTS`, and note that Railway redeploys when a variable changes; lines 110-112 "more than 550 locations" and the same cache sentence as DECISIONS; lines 124-125 "10 mi spacing is refused on very long trips (over 550 weather locations). Pick 25 or 50 mi, or Auto."; line 161 drop `LOOM.md`.
   - Copy `docs/LOOM.md` to `.superpowers/LOOM.md` (git-excluded), then `git rm docs/LOOM.md`. In the copy: drop "gust" on line 31; replace lines 3-5 with "Do the first search live and say the wait is TomTom on long trips; show the cached speed in section 7."; lines 55-58 become "I tried recolouring through the map style, but it was slow, so the app updates each square's value instead."; lines 56 and 65 say what the code does, not "I measured". The brief asks for the video, not the script.
 
-- [ ] **Step 8: Verify.** `cd backend && .venv/Scripts/python -m pytest -q`. Expected: 122 passed (one duplicate removed, one rain test added). `cd frontend && npm run build && npm run lint`. Expected: clean. In the browser against the local backend: a checkpoint popup shows wind to one decimal and no Gust row; a card shows an arrival with a time zone and no bar; start a search, then press Enter in the Load field while it loads and confirm the Network tab shows one `POST /api/plan`; LA to New York with 25 mi returns 3 routes (was refused); 10 mi on the same trip is still refused with the "wider interval" message.
+- [x] **Step 8: Verify.** `cd backend && .venv/Scripts/python -m pytest -q`. Expected: 122 passed (one duplicate removed, one rain test added). `cd frontend && npm run build && npm run lint`. Expected: clean. In the browser against the local backend: a checkpoint popup shows wind to one decimal and no Gust row; a card shows an arrival with a time zone and no bar; start a search, then press Enter in the Load field while it loads and confirm the Network tab shows one `POST /api/plan`; LA to New York with 25 mi returns 3 routes (was refused); 10 mi on the same trip is still refused with the "wider interval" message.
 
-- [ ] **Step 9:** Commit, including this plan file: `Apply review pass: trim gusts, risk bar and dead code; fix rain rounding`.
+- [x] **Step 9:** Commit, including this plan file: `Apply review pass: trim gusts, risk bar and dead code; fix rain rounding`.

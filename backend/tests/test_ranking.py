@@ -45,6 +45,7 @@ def test_route_shorter_than_interval():
 
 def test_covered_miles_split_at_midpoints():
     assert covered_miles([0, 25, 50, 60]) == [12.5, 25, 17.5, 5]
+    assert covered_miles([0.0]) == [0.0]
 
 
 def test_covered_miles_add_up_to_route_length():
