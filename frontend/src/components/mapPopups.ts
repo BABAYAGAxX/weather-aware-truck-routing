@@ -45,8 +45,8 @@ export function showCheckpointPopup(map: MapLibreMap, popup: Popup, route: Route
   const content = popupContent(`Route ${route.id}, mile ${Math.round(point.mile)}`, RISK_COLORS[point.risk], [
     ['ETA', formatEta(point.eta)],
     ['Wind', `${point.wind_mph.toFixed(1)} mph`],
-    ['Rain', `${point.rain_in_hr.toFixed(2)} in/hr`],
-    ['Snow', `${point.snow_in_hr.toFixed(2)} in/hr`],
+    ['Rain', `${point.rain_in_hr.toFixed(3)} in/hr`],
+    ['Snow', `${point.snow_in_hr.toFixed(3)} in/hr`],
     ['Risk', RISK_LABELS[point.risk]],
     ['Cause', point.cause ? CAUSE_LABELS[point.cause] : 'None'],
   ])

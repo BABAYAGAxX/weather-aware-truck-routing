@@ -46,7 +46,8 @@ def covered_miles(miles: Sequence[float]) -> list[float]:
 
     Example: [0, 50, 80] -> [25, 40, 15]
     """
-    edges = [miles[0], *((a + b) / 2 for a, b in zip(miles, miles[1:])), miles[-1]]
+    midpoints = [(a + b) / 2 for a, b in zip(miles, miles[1:])]
+    edges = [miles[0], *midpoints, miles[-1]]
     return [end - start for start, end in zip(edges, edges[1:])]
 
 
