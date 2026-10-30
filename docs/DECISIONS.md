@@ -96,5 +96,9 @@ Providers sit behind adapters so they can be swapped.
 
 ## Scope
 
-US only, no accounts, no saved trips. Runs locally: Django's cache by default, Redis
+US only, no accounts, no saved trips. Django's in-memory cache by default, Redis
 when `REDIS_URL` is set.
+
+## Hosting
+
+Frontend on Vercel, Django on Railway.
