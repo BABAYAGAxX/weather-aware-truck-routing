@@ -26,8 +26,7 @@ from trips.domain.risk import checkpoint_cause, classify_checkpoint
 from trips.tomtom import RouteData, fetch_routes
 from trips.weather import Forecast, get_forecasts
 
-MAX_LOCATIONS = 500
-CHECKPOINT_GRID_DEG = 0.1  # checkpoints share a forecast when they snap to the same square
+MAX_LOCATIONS = 550
 ROUTE_CACHE_SECONDS = 600
 HEATMAP_HOURS = 49  # departure plus 0 to 48 whole hours
 GEOMETRY_STEP = 5  # keep every 5th route point
@@ -65,14 +64,13 @@ def _stops(route: RouteData, depart_at: datetime, interval: int) -> list[tuple[f
 def _checkpoint(stop: tuple[float, Point, datetime], forecasts: dict[Point, Forecast], load_lb: float) -> dict:
     """Step 8: the forecast hour nearest the ETA, classified."""
     mile, position, eta = stop
-    weather, gust = forecasts[snap(position, CHECKPOINT_GRID_DEG)].weather_at(eta)
+    weather = forecasts[snap(position)].weather_at(eta)
     return {
         "mile": round(mile, 1),
         "lat": round(position[0], 5),
         "lon": round(position[1], 5),
         "eta": _iso(eta),
         "wind_mph": round(weather.wind_mph, 2),
-        "gust_mph": round(gust, 2),
         "rain_in_hr": round(weather.rain_in_hr, 2),
         "snow_in_hr": round(weather.snow_in_hr, 2),
         "risk": int(classify_checkpoint(weather, load_lb)),
@@ -86,7 +84,7 @@ def _heat_cell(cell: Point, forecast: Forecast, depart_at: datetime, load_lb: fl
         "lat": cell[0],
         "lon": cell[1],
         "risk": [
-            int(classify_checkpoint(forecast.weather_at(depart_at + timedelta(hours=hour))[0], load_lb))
+            int(classify_checkpoint(forecast.weather_at(depart_at + timedelta(hours=hour)), load_lb))
             for hour in range(HEATMAP_HOURS)
         ],
     }
@@ -135,7 +133,7 @@ def plan_trip(
     cells = corridor_cells([route.points for route in routes], cell_deg)
 
     # Step 6: count unique locations before fetching, so the cache never changes the answer.
-    locations = {snap(position, CHECKPOINT_GRID_DEG) for route_stops in stops for _, position, _ in route_stops}
+    locations = {snap(position) for route_stops in stops for _, position, _ in route_stops}
     locations |= cells
     if len(locations) > MAX_LOCATIONS:
         if interval == "auto" or interval_miles == 50:  # nothing wider to suggest

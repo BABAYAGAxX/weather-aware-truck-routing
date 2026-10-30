@@ -15,12 +15,12 @@ The smallest system that meets every requirement in the brief. Rule details live
 
 | Question | Result | Effect on design |
 |---|---|---|
-| Does TomTom always return 3 truck routes? | Yes on 13 of 14 trips, 8 to 3,337 mi. San Diego to Bangor gave 1 route, because TomTom's other route modes timed out, and the app shows "Only 1 route found" | No code to force extra routes |
+| Does TomTom always return 3 truck routes? | Yes on 13 of 14 trips, 8 to 3,556 mi. San Diego to Bangor gave 1 route, because TomTom's other route modes timed out, and the app shows "Only 1 route found" | No code to force extra routes |
 | Can we get real ETAs along a route? | Yes. `instructionsType=coded` gives distance and elapsed time, 47 pairs on a 786 mi route, largest gap 206 mi | Estimate time between pairs |
 | Does the route's point list match TomTom's length? | Within 0.2% on 12 routes | Position by fraction of length |
 | TomTom response time | 3.9 s on a 780 mi trip, 5.9 s on 1,338 mi, 11.9 s on 2,987 mi, 19.0 s on 3,556 mi, for all routes in one call. The 6.3 s on 3,307 mi was a single-route response | One call per search, 30 s timeout |
 | Open-Meteo speed | 500 points in 0.8 s, 350 points for 14 days in 2.1 s | One call per search, no async |
-| How does Open-Meteo count usage? | Per location: a 750-point burst hit the limit | 500 locations a search |
+| How does Open-Meteo count usage? | Per location: a 750-point burst hit the limit | 550 locations a search |
 | Do 14-day requests cost extra? | No: 590 locations in a minute passed | `forecast_days=14` |
 | Snow units | `precipitation_unit=inch` converts correctly (4.41 cm = 1.74 in) | No manual conversion |
 | Forecast gaps | 0 missing values in 240 hours for 30 points | No gap-filling logic |
@@ -51,7 +51,7 @@ websockets.
 3. Pick one interval for all routes.
 4. For each route, find each checkpoint's position and ETA.
 5. List the heatmap squares around the routes.
-6. If the search needs more than 500 weather locations, refuse the interval.
+6. If the search needs more than 550 weather locations, refuse the interval.
 7. Call Open-Meteo once for every location not already cached.
 8. For each checkpoint, read the forecast hour nearest its ETA and classify it.
 9. For each heatmap square, classify hours 0 to 48 after departure.
@@ -68,8 +68,8 @@ above.
 
 | Trip | Longest route | Routes | Auto (interval) | 10 mi | 25 mi | 50 mi |
 |---|---|---|---|---|---|---|
-| Seattle to Miami | 3,556 mi | 3 | 345 (50 mi) | 1,055, refused | 529, refused | 345 |
-| LA to New York | 2,987 mi | 3 | 333 (50 mi) | 1,016, refused | 505, refused | 333 |
+| Seattle to Miami | 3,556 mi | 3 | 345 (50 mi) | 1,055, refused | 529, fits | 345 |
+| LA to New York | 2,987 mi | 3 | 333 (50 mi) | 1,016, refused | 505, fits | 333 |
 | San Diego to Bangor | 3,307 mi | 1 | 178 (50 mi) | 442 | 244 | 178 |
 | Chicago to Denver | 1,338 mi | 3 | 219 (50 mi) | 495 | 288 | 219 |
 | Dallas to Atlanta | 968 mi | 3 | 144 (50 mi) | 331 | 189 | 144 |
@@ -116,7 +116,7 @@ within 30 minutes makes no weather calls.
       "checkpoints": [
         {
           "mile": 50, "lat": 32.5, "lon": -96.1, "eta": "2026-10-31T14:48:00Z",
-          "wind_mph": 18.2, "gust_mph": 27.0, "rain_in_hr": 0.0, "snow_in_hr": 0.0,
+          "wind_mph": 18.2, "rain_in_hr": 0.0, "snow_in_hr": 0.0,
           "risk": 0, "cause": null
         }
       ]
@@ -148,7 +148,7 @@ within 30 minutes makes no weather calls.
 | `trips/planner.py` | Steps 2 to 10 above |
 | `trips/serializers.py` | Check requests |
 | `trips/views.py` | Two thin endpoints |
-| `config/settings.py` | Settings from environment variables, CORS, logging |
+| `config/settings.py` | Settings from environment variables and CORS |
 | `config/urls.py` | Maps `/api/plan` and `/api/places` to the views |
 | `Procfile` | Starts gunicorn on Railway |
 
@@ -160,12 +160,13 @@ within 30 minutes makes no weather calls.
 | `src/App.tsx` | Layout, search and selected route state |
 | `src/api.ts` | Types and fetch calls |
 | `src/risk.ts` | Risk labels and the shared colors |
-| `src/format.ts` | Duration, arrival and ETA text |
+| `src/format.ts` | Duration and time text |
 | `src/components/TripForm.tsx` | Form, including interval selector |
 | `src/components/PlaceField.tsx` | Address autocomplete |
-| `src/components/RouteCards.tsx` | Summaries, risk bar, the "why" |
+| `src/components/RouteCards.tsx` | Summaries and the why |
 | `src/components/mapPopups.ts` | Route and checkpoint popups |
 | `src/components/MapView.tsx` | Routes, checkpoints, heatmap |
+| `src/components/MapUnavailable.tsx` | Message when the map cannot load |
 | `src/components/HourSlider.tsx` | Forecast slider, its hour label, risk legend |
 
 ## Screen
@@ -214,7 +215,7 @@ heatmap still show.
 | Routes, checkpoints, risk levels and ETAs on a map | `MapView` |
 | Route summaries on a map | `MapView` popup, `RouteCards` beside it |
 | Heatmap with 0 to 48 h slider | `MapView`, `HourSlider` |
-| GitHub repo, hosted app, Loom | Repo done, Vercel + Railway, script in README |
+| GitHub repo, hosted app, Loom | Repo and hosting per README, Loom video linked from README |
 
 ## Left out on purpose
 

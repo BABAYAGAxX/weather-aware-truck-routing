@@ -49,9 +49,10 @@ def elapsed_at(pairs: Sequence[tuple[float, float]], distance: float) -> float:
     return e1 + (distance - d1) / (d2 - d1) * (e2 - e1)
 
 
-def snap(point: Point, step: float) -> Point:
-    """Nearest point on an absolute grid, rounded to 2 decimals so it makes a stable cache key."""
-    return tuple(round(round(v / step) * step, 2) for v in point)
+def snap(point: Point) -> Point:
+    """The 0.1 degree square a point falls in, so nearby checkpoints share one forecast."""
+    lat, lon = point
+    return (round(lat, 1), round(lon, 1))
 
 
 def corridor_cells(routes: Sequence[Sequence[Point]], cell_deg: float) -> set[Point]:

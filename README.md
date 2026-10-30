@@ -30,7 +30,7 @@ text after `DJANGO_SECRET_KEY=`. Never commit this file. Then:
 python manage.py runserver
 ```
 
-The API is now at http://localhost:8000. To run the 121 backend tests: `python -m pytest`.
+The API is now at http://localhost:8000. To run the backend tests: `python -m pytest`.
 
 **Frontend**, from the `frontend` folder:
 
@@ -55,19 +55,20 @@ the frontend needs its address.
 1. New project, deploy from your GitHub repo. In the service settings set **Root
    Directory** to `backend`. Railway picks up the `Procfile` (gunicorn) and
    `.python-version` (Python 3.12) by itself.
-2. Under Variables add:
+2. Under Settings, Networking, generate a public domain.
+3. Under Variables add the following. Railway redeploys each time a variable changes.
    - `TOMTOM_API_KEY`: your TomTom key.
    - `DJANGO_SECRET_KEY`: a long random string.
-   - `DJANGO_ALLOWED_HOSTS`: the Railway domain, for example `my-app.up.railway.app`
-     (no `https://`).
+   - `DJANGO_ALLOWED_HOSTS`: the Railway domain from step 2, for example
+     `my-app.up.railway.app` (no `https://`).
    - `CORS_ALLOWED_ORIGINS`: the Vercel address, for example `https://my-app.vercel.app`
      (no trailing slash).
    - Leave `DJANGO_DEBUG` unset.
-3. Under Settings, Networking, generate a public domain.
 
 If `DJANGO_ALLOWED_HOSTS` is missing, Django answers every request with 400 "Bad Request"
 (it only allows localhost). If `CORS_ALLOWED_ORIGINS` is missing, the page loads but the
-browser blocks every call to the API, so a search shows a network error.
+browser blocks every call to the API, so address search shows "Address search is
+unavailable" and Find routes shows "Cannot reach the server".
 
 **Vercel (frontend)**
 
@@ -107,9 +108,9 @@ The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and w
    which repaints every square in one frame.
 8. **Caching and the weather budget.** Open-Meteo's free tier counts locations, not
    requests (600 a minute). Nearby points share one forecast square, each square is
-   cached for 30 minutes, and a search that needs more than 500 locations is refused
-   with a message asking for a wider interval. Changing the load or interval on a trip
-   you just searched makes no new weather calls.
+   cached for 30 minutes, and a search that needs more than 550 locations is refused
+   with a message asking for a wider interval. Changing the load or departure needs no
+   new weather calls, and changing the interval reuses every square already fetched.
 
 ## Known limits
 
@@ -121,8 +122,8 @@ The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and w
 - ETAs are continuous driving time. Rest breaks are not modelled.
 - Free weather limits can make the app say "try again in a minute", for example after
   two different cross-country searches in quick succession.
-- 10 mi spacing is refused on very long trips (it would need more than 500 weather
-  locations). Pick 25 or 50 mi, or Auto.
+- 10 mi spacing is refused on very long trips (over 550 weather locations). Pick 25 or
+  50 mi, or Auto.
 - US only. No accounts, no saved trips.
 - A 50 mi interval can miss a narrow storm. The heatmap covers the whole corridor for
   that reason.
@@ -143,7 +144,7 @@ Two places where this changed the outcome:
 
 1. **The weather budget.** Running real cross-country trips found a defect: Seattle to
    Miami on Auto needed 605 weather locations and Los Angeles to New York 571, over the
-   500 limit, so the search was refused with advice to pick a wider interval that was
+   500 limit it had then (now 550), so the search was refused with advice to pick a wider interval that was
    already the widest. The fix was larger heatmap squares (2 degrees) on trips over
    1,500 miles, which brought Auto down to 345 and 333, and a plain "too long" message
    instead of the wrong advice. The planned numbers in the design had been too low.
@@ -158,5 +159,5 @@ Two places where this changed the outcome:
 ```
 backend/   Django + Django REST Framework (trips/ has the code, trips/domain/ the pure rules)
 frontend/  Vite + React + TypeScript + MUI + MapLibre
-docs/      DECISIONS.md (rules), DESIGN.md (structure), LOOM.md (video outline)
+docs/      DECISIONS.md (rules), DESIGN.md (structure)
 ```

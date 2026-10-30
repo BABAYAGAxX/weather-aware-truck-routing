@@ -72,10 +72,3 @@ REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
     'DEFAULT_RENDERER_CLASSES': ['rest_framework.renderers.JSONRenderer'],
 }
-
-# The TomTom key is in the request URL, and httpx logs URLs at INFO.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'loggers': {'httpx': {'level': 'WARNING'}},
-}

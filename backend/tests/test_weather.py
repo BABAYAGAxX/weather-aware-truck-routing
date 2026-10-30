@@ -22,22 +22,21 @@ def httpx_429(monkeypatch):
 
 
 def forecast(hours=3):
-    return Forecast(datetime(2026, 10, 30, tzinfo=UTC), [10.0] * hours, [20.0] * hours,
-                    [0.0] * hours, [0.0] * hours)
+    return Forecast(datetime(2026, 10, 30, tzinfo=UTC), [10.0] * hours, [0.0] * hours, [0.0] * hours)
 
 
 def test_weather_at_uses_nearest_hour():
     f = forecast()
     f.wind[1] = 40.0
-    assert f.weather_at(datetime(2026, 10, 30, 1, 29, tzinfo=UTC))[0].wind_mph == 40.0
-    assert f.weather_at(datetime(2026, 10, 30, 1, 31, tzinfo=UTC))[0].wind_mph == 10.0
+    assert f.weather_at(datetime(2026, 10, 30, 1, 29, tzinfo=UTC)).wind_mph == 40.0
+    assert f.weather_at(datetime(2026, 10, 30, 1, 31, tzinfo=UTC)).wind_mph == 10.0
 
 
 def test_weather_at_sends_half_hours_up_so_consecutive_times_read_consecutive_hours():
     f = forecast(hours=4)
     f.wind = [0.0, 1.0, 2.0, 3.0]
-    assert f.weather_at(datetime(2026, 10, 30, 0, 30, tzinfo=UTC))[0].wind_mph == 1.0
-    assert f.weather_at(datetime(2026, 10, 30, 1, 30, tzinfo=UTC))[0].wind_mph == 2.0
+    assert f.weather_at(datetime(2026, 10, 30, 0, 30, tzinfo=UTC)).wind_mph == 1.0
+    assert f.weather_at(datetime(2026, 10, 30, 1, 30, tzinfo=UTC)).wind_mph == 2.0
 
 
 def test_weather_at_outside_forecast_raises():
@@ -71,7 +70,7 @@ def test_rate_limit_raises_weather_unavailable(httpx_429):
 def _location(start, rain, showers):
     """One location's block of an Open-Meteo response, two hours long."""
     return {"hourly": {"time": [start, start + 3600], "wind_speed_10m": [5.0, 6.0],
-                       "wind_gusts_10m": [9.0, 10.0], "rain": rain, "showers": showers,
+                       "rain": rain, "showers": showers,
                        "snowfall": [0.0, 0.5]}}
 
 
@@ -84,7 +83,15 @@ def test_fetch_reads_a_list_or_a_single_object(monkeypatch, wrap):
     assert result.start == datetime.fromtimestamp(1_793_318_400, UTC)
     assert result.start.tzinfo is not None
     assert result.rain == pytest.approx([0.3, 0.0])  # rain plus showers
-    assert result.weather_at(result.start)[1] == 9.0
+    assert result.weather_at(result.start).wind_mph == 5.0
+
+
+def test_rain_plus_showers_is_rounded_so_a_band_edge_is_not_missed(monkeypatch):
+    blocks = [_location(1_793_318_400, [0.01, 0.0], [0.09, 0.0])]
+    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
+        200, json=blocks, request=httpx.Request("POST", weather.URL)))
+    result = weather._fetch([(1.0, 1.0)])[(1.0, 1.0)]
+    assert result.rain[0] == 0.1  # exact, so classify_rain reads Moderate
 
 
 def test_fetch_rejects_a_malformed_response(monkeypatch):

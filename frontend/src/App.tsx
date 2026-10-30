@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import Alert from '@mui/material/Alert'
 import Box from '@mui/material/Box'
 import LinearProgress from '@mui/material/LinearProgress'
@@ -17,22 +17,18 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const latestRequest = useRef(0) // only the newest search may update the screen
 
   async function search(request: PlanRequest) {
-    const mine = ++latestRequest.current
     setLoading(true)
     setError(null)
     try {
       const result = await planTrip(request)
-      if (mine !== latestRequest.current) return
       setPlan(result)
       setSelectedId((result.routes.find((route) => route.recommended) ?? result.routes[0]).id)
     } catch (err) {
-      if (mine !== latestRequest.current) return
       setError(err instanceof Error ? err.message : 'Something went wrong. Try again.')
     } finally {
-      if (mine === latestRequest.current) setLoading(false)
+      setLoading(false)
     }
   }
 

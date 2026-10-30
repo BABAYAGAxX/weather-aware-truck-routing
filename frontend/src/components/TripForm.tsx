@@ -76,7 +76,7 @@ export default function TripForm({ onSubmit, loading }: Props) {
           aria-labelledby="interval-label"
           sx={{ '& .MuiToggleButton-root': { textTransform: 'none' } }}
           value={spacing}
-          onChange={(_, next: Interval | null) => next !== null && setSpacing(next)}
+          onChange={(_, next: Interval | null) => { if (next !== null) setSpacing(next) }}
         >
           <ToggleButton value="auto">Auto</ToggleButton>
           <ToggleButton value={10}>10 mi</ToggleButton>

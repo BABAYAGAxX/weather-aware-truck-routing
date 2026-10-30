@@ -4,8 +4,8 @@ import Card from '@mui/material/Card'
 import CardActionArea from '@mui/material/CardActionArea'
 import Chip from '@mui/material/Chip'
 import Typography from '@mui/material/Typography'
-import type { Checkpoint, Route } from '../api'
-import { formatArrival, formatDuration } from '../format'
+import type { Route } from '../api'
+import { formatDuration, formatEta } from '../format'
 import { RISK_COLORS, RISK_LABELS, ROUTE_COLORS, UI_COLORS } from '../risk'
 
 interface Props {
@@ -13,27 +13,6 @@ interface Props {
   selectedId: string | null
   intervalMiles: number
   onSelect: (id: string) => void
-}
-
-// Each checkpoint covers half the gap to the checkpoint before it and half the gap to the one after it.
-function coveredMiles(checkpoints: Checkpoint[]): number[] {
-  return checkpoints.map((point, i) => {
-    const before = i > 0 ? point.mile - checkpoints[i - 1].mile : 0
-    const after = i < checkpoints.length - 1 ? checkpoints[i + 1].mile - point.mile : 0
-    return (before + after) / 2
-  })
-}
-
-// Color alone is not enough, so the bar also gets a sentence: "Low for 80 mi, then High for 25 mi".
-function describeBar(checkpoints: Checkpoint[]): string {
-  const runs: { risk: number; miles: number }[] = []
-  coveredMiles(checkpoints).forEach((miles, i) => {
-    const last = runs[runs.length - 1]
-    if (last && last.risk === checkpoints[i].risk) last.miles += miles
-    else runs.push({ risk: checkpoints[i].risk, miles })
-  })
-  const parts = runs.map((run) => `${RISK_LABELS[run.risk]} for ${Math.round(run.miles).toLocaleString()} mi`)
-  return `Risk along the route, start to finish: ${parts.join(', then ')}`
 }
 
 function RiskMiles({ risk, miles }: { risk: number; miles: number }) {
@@ -69,7 +48,6 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
       {routes.map((route) => {
         const selected = route.id === selectedId
         const color = ROUTE_COLORS[route.id]
-        const widths = coveredMiles(route.checkpoints)
         return (
           <Card
             key={route.id}
@@ -99,7 +77,7 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
               )}
 
               <Typography component="span" variant="body2">
-                {formatDuration(route.duration_s)}, arrives {formatArrival(route.arrival)}
+                {formatDuration(route.duration_s)}, arrives {formatEta(route.arrival)}
               </Typography>
 
               <Box component="span" sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1 }}>
@@ -111,17 +89,6 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
               <Typography component="span" variant="body2" color="text.secondary">
                 Average risk {route.average_risk.toFixed(2)} of 4
               </Typography>
-
-              <Box
-                component="span"
-                role="img"
-                aria-label={describeBar(route.checkpoints)}
-                sx={{ display: 'flex', height: 8, borderRadius: 1, overflow: 'hidden', bgcolor: UI_COLORS.border }}
-              >
-                {route.checkpoints.map((point, i) => (
-                  <Box key={point.mile} component="span" sx={{ flex: widths[i], bgcolor: RISK_COLORS[point.risk] }} />
-                ))}
-              </Box>
             </CardActionArea>
           </Card>
         )

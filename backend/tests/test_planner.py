@@ -27,7 +27,7 @@ def straight_route(miles, hours, lon_span=2, lat=35.0):
 def fake_forecast(winds, rain=0.0, snow=0.0):
     """A forecast starting at departure, one hour per wind value."""
     hours = len(winds)
-    return Forecast(DEPART, list(winds), [20.0] * hours, [rain] * hours, [snow] * hours)
+    return Forecast(DEPART, list(winds), [rain] * hours, [snow] * hours)
 
 
 @pytest.fixture
@@ -38,7 +38,7 @@ def short_routes():
 
 @pytest.fixture
 def long_route():
-    # Sized to stay over 500 locations with the 2 degree squares used over 1,500 mi.
+    # Sized to stay over 550 locations with the 2 degree squares used over 1,500 mi.
     return [straight_route(6000, 90, 58)]
 
 
@@ -87,11 +87,6 @@ def test_heatmap_has_49_hours_from_departure(plan):
     assert cells and all(len(cell["risk"]) == 49 for cell in cells)
 
 
-def test_interval_refused_over_budget_whatever_is_cached(plan, long_route):
-    with pytest.raises(IntervalTooFine):
-        plan(routes=long_route, interval=10)
-
-
 def test_auto_over_budget_says_the_trip_is_too_long(plan, long_route, monkeypatch):
     monkeypatch.setattr(planner, "MAX_LOCATIONS", 10)
     with pytest.raises(IntervalTooFine) as error:
@@ -122,7 +117,7 @@ def test_interval_refused_over_budget_even_when_every_location_is_cached(monkeyp
     monkeypatch.setattr(weather, "_fetch", lambda cells: {cell: fake_forecast([10.0] * 100) for cell in cells})
     monkeypatch.setattr(planner, "MAX_LOCATIONS", 10_000)
     plan_trip(ORIGIN, DESTINATION, DEPART, 35_000, 10)  # warms the cache for every location
-    monkeypatch.setattr(planner, "MAX_LOCATIONS", 500)
+    monkeypatch.setattr(planner, "MAX_LOCATIONS", 550)
     with pytest.raises(IntervalTooFine):
         plan_trip(ORIGIN, DESTINATION, DEPART, 35_000, 10)
 
@@ -174,7 +169,7 @@ def test_response_shape(plan):
     assert len(route["geometry"]) == 21  # points 0, 5, ..., 100
     assert route["checkpoints"][0] == {
         "mile": 0, "lat": 35.0, "lon": -100.0, "eta": "2026-10-31T14:00:00Z",
-        "wind_mph": 10, "gust_mph": 20, "rain_in_hr": 0, "snow_in_hr": 0, "risk": 0, "cause": None,
+        "wind_mph": 10, "rain_in_hr": 0, "snow_in_hr": 0, "risk": 0, "cause": None,
     }
     assert result["heatmap"]["cell_deg"] == 0.25
 

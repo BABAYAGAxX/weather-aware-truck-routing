@@ -29,17 +29,16 @@ class OutOfForecast(Exception):
 class Forecast:
     start: datetime  # UTC time of the first hour. Each square keeps its own.
     wind: list[float]  # mph
-    gust: list[float]  # mph
     rain: list[float]  # inches per hour, rain plus showers
     snow: list[float]  # inches per hour
 
-    def weather_at(self, when: datetime) -> tuple[Weather, float]:
-        """Weather and gust for the hour nearest to `when`. Exactly halfway goes to the later hour."""
+    def weather_at(self, when: datetime) -> Weather:
+        """Weather for the hour nearest to `when`. Exactly halfway goes to the later hour."""
         # Not round(): it sends ties to the even number, so hours 0.5, 1.5, 2.5 would read 0, 2, 2.
         hour = math.floor((when - self.start).total_seconds() / 3600 + 0.5)
         if not 0 <= hour < len(self.wind):
             raise OutOfForecast("That time is outside the 14 day forecast.")
-        return Weather(self.wind[hour], self.rain[hour], self.snow[hour]), self.gust[hour]
+        return Weather(self.wind[hour], self.rain[hour], self.snow[hour])
 
 
 def _fetch(cells: list[Point]) -> dict[Point, Forecast]:
@@ -47,7 +46,7 @@ def _fetch(cells: list[Point]) -> dict[Point, Forecast]:
     form = {
         "latitude": ",".join(str(lat) for lat, _ in cells),
         "longitude": ",".join(str(lon) for _, lon in cells),
-        "hourly": "wind_speed_10m,wind_gusts_10m,rain,showers,snowfall",
+        "hourly": "wind_speed_10m,rain,showers,snowfall",
         "wind_speed_unit": "mph",
         "precipitation_unit": "inch",
         "timezone": "UTC",
@@ -80,8 +79,7 @@ def _parse(hourly: dict) -> Forecast:
     return Forecast(
         start=datetime.fromtimestamp(hourly["time"][0], timezone.utc),
         wind=hourly["wind_speed_10m"],
-        gust=hourly["wind_gusts_10m"],
-        rain=[rain + showers for rain, showers in zip(hourly["rain"], hourly["showers"])],
+        rain=[round(rain + showers, 3) for rain, showers in zip(hourly["rain"], hourly["showers"])],
         snow=hourly["snowfall"],
     )
 
