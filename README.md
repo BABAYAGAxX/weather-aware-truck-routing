@@ -1,6 +1,6 @@
 # Weather-Aware Truck Routing
 
-React + Django app that helps a truck driver choose the safest route based on
-weather, load weight and travel time.
+React + Django project scaffold. The app itself arrives in a pull request.
 
-See [docs/DECISIONS.md](docs/DECISIONS.md) for how the brief's rules were interpreted.
+- `backend/`: Django + Django REST Framework.
+- `frontend/`: Vite + React + TypeScript + MUI + MapLibre.
