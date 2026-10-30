@@ -23,3 +23,8 @@ dist/
 Thumbs.db
 .idea/
 .vscode/
+
+# Agent tooling
+.claude/
+.omc/
+.playwright-mcp/
