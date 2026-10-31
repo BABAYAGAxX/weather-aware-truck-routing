@@ -128,7 +128,7 @@ def recommendation_reason(ranked: Sequence[RouteRisk]) -> str:
         a = round(getattr(best, field), digits)
         b = round(getattr(other, field), digits)
         if a != b:
-            reason = f"{label} ({a:.{digits}f} vs {b:.{digits}f})."
+            reason = f"{label} ({a:,.{digits}f} vs {b:,.{digits}f})."
             break
     slower = round((best.duration_s - fastest.duration_s) / 60)
     if slower > 0:

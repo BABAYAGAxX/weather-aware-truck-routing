@@ -157,6 +157,7 @@ change the cache setting to Redis.
 
 ## Hosting
 
-Frontend on Vercel, Django on Railway. Railway runs one process with four threads, so
-every request shares the one in-memory cache. Gunicorn waits up to 60 s for a request,
+Frontend on Vercel, Django on Render's free plan. Gunicorn runs one process with four
+threads, so every request shares the one in-memory cache. The free plan sleeps after 15
+minutes without traffic, takes about a minute to wake, and starts with an empty cache. Gunicorn waits up to 60 s for a request,
 so a slow long-trip search is not cut off.
