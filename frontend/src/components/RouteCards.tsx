@@ -5,7 +5,7 @@ import CardActionArea from '@mui/material/CardActionArea'
 import Chip from '@mui/material/Chip'
 import Typography from '@mui/material/Typography'
 import type { Route } from '../api'
-import { formatDuration, formatEta } from '../format'
+import { formatDuration, formatEta, formatMiles } from '../format'
 import { RISK_COLORS, RISK_LABELS, ROUTE_COLORS, UI_COLORS } from '../risk'
 
 interface Props {
@@ -25,7 +25,7 @@ function RiskMiles({ risk, miles }: { risk: number; miles: number }) {
         </Typography>
       </Box>
       <Typography component="span" variant="body2" sx={{ fontWeight: 600 }}>
-        {miles.toFixed(1)} mi
+        {formatMiles(miles, 1)} mi
       </Typography>
     </Box>
   )
@@ -66,7 +66,7 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
                 </Typography>
                 {route.recommended && <Chip label="Recommended" size="small" color="success" />}
                 <Typography component="span" sx={{ ml: 'auto', fontWeight: 600 }}>
-                  {Math.round(route.miles).toLocaleString()} mi
+                  {formatMiles(route.miles)} mi
                 </Typography>
               </Box>
 

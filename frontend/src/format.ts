@@ -5,6 +5,10 @@ export function formatDuration(seconds: number): string {
   return minutes < 60 ? `${minutes} min` : `${Math.floor(minutes / 60)} h ${minutes % 60} min`
 }
 
+export function formatMiles(miles: number, digits = 0): string {
+  return miles.toLocaleString([], { minimumFractionDigits: digits, maximumFractionDigits: digits })
+}
+
 export function formatEta(iso: string): string {
   return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }

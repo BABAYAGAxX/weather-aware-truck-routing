@@ -1,6 +1,6 @@
 import type { LngLat, Map as MapLibreMap, Popup } from 'maplibre-gl'
 import type { Checkpoint, Route } from '../api'
-import { formatDuration, formatEta } from '../format'
+import { formatDuration, formatEta, formatMiles } from '../format'
 import { CAUSE_LABELS, RISK_COLORS, RISK_LABELS, ROUTE_COLORS } from '../risk'
 
 // Text goes in through textContent, so a server string can never become HTML.
@@ -27,11 +27,11 @@ function popupContent(title: string, color: string, rows: [string, string][]): H
 export function showRoutePopup(map: MapLibreMap, popup: Popup, routes: Route[], route: Route, clicked: LngLat | null) {
   const rank = routes.indexOf(route) + 1
   const content = popupContent(`Route ${route.id}, ranked ${rank} of ${routes.length}`, ROUTE_COLORS[route.id], [
-    ['Distance', `${Math.round(route.miles).toLocaleString()} mi`],
+    ['Distance', `${formatMiles(route.miles)} mi`],
     ['Duration', formatDuration(route.duration_s)],
-    [RISK_LABELS[4], `${route.no_travel_miles.toFixed(1)} mi`],
-    [RISK_LABELS[3], `${route.severe_miles.toFixed(1)} mi`],
-    [RISK_LABELS[2], `${route.high_miles.toFixed(1)} mi`],
+    [RISK_LABELS[4], `${formatMiles(route.no_travel_miles, 1)} mi`],
+    [RISK_LABELS[3], `${formatMiles(route.severe_miles, 1)} mi`],
+    [RISK_LABELS[2], `${formatMiles(route.high_miles, 1)} mi`],
     ['Average risk', `${route.average_risk.toFixed(2)} of 4`],
   ])
   // Without a click, the middle of the part on screen, so a zoomed-in map still shows the popup.
@@ -42,7 +42,7 @@ export function showRoutePopup(map: MapLibreMap, popup: Popup, routes: Route[], 
 }
 
 export function showCheckpointPopup(map: MapLibreMap, popup: Popup, route: Route, point: Checkpoint) {
-  const content = popupContent(`Route ${route.id}, mile ${Math.round(point.mile)}`, RISK_COLORS[point.risk], [
+  const content = popupContent(`Route ${route.id}, mile ${formatMiles(point.mile)}`, RISK_COLORS[point.risk], [
     ['ETA', formatEta(point.eta)],
     ['Wind', `${point.wind_mph.toFixed(1)} mph`],
     ['Rain', `${point.rain_in_hr.toFixed(3)} in/hr`],

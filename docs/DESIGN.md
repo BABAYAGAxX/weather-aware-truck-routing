@@ -26,7 +26,7 @@ The smallest system that meets every requirement in the brief. Rule details live
 | Forecast gaps | 0 missing values in 240 hours for 30 points | No gap-filling logic |
 | Address search | TomTom typeahead works with `countrySet=US` | Same key, same vendor |
 | Slider repaint | Seattle to Miami, 163 squares, 4x CPU slowdown, keyboard sweep (6 runs, 3 for step to screen). Feature state: 0 tile reloads, 22 to 24 ms from step to screen, 2 frames over 20 ms, every hour painted in one frame. Global state: 4 tile reloads per step, 44 to 54 ms, 11 frames over 20 ms, a step could paint over more than one frame. `setPaintProperty` reloads just the same | Use feature state |
-| Railway request limit | 15 minutes | A long-trip request of up to about 25 s (22.9 s end to end measured) is safe, with gunicorn set to 60 s |
+| Hosted speed on Render's free plan | Dallas to Atlanta 5.8 s, then 1.0 s repeated. Seattle to Miami 15.2 s, then 2.7 s repeated | A long-trip request of up to about 25 s is safe, with gunicorn set to 60 s |
 
 ## Architecture
 
@@ -34,7 +34,7 @@ The smallest system that meets every requirement in the brief. Rule details live
 Browser (React + MUI + MapLibre)          Vercel
    |  GET  /api/places?q=dall
    |  POST /api/plan
-Django + DRF (2 views, no database)       Railway
+Django + DRF (2 views, no database)       Render
    |-- trips/tomtom.py    routes and address search
    |-- trips/weather.py   hourly forecast with per-square cache
    |-- trips/planner.py   the one function that ties it together
@@ -150,7 +150,7 @@ within 30 minutes makes no weather calls.
 | `trips/views.py` | Two thin endpoints |
 | `config/settings.py` | Settings from environment variables and CORS |
 | `config/urls.py` | Maps `/api/plan` and `/api/places` to the views |
-| `Procfile` | Starts gunicorn on Railway |
+| `Procfile` | The gunicorn start command, for hosts that read it. Render's is set in its dashboard |
 
 ## Frontend files
 

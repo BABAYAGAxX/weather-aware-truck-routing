@@ -5,7 +5,7 @@ TomTom for up to three truck routes, checks the weather your truck will meet at 
 checkpoint (using the time the truck should actually be there), and recommends the safest
 route. Everything is drawn on a map, with a heatmap and a 0 to 48 hour forecast slider.
 
-**Live app:** TBD after deployment
+**Live app:** https://weather-aware-truck-routing-mu.vercel.app
 
 **Loom walkthrough:** TBD
 
@@ -49,23 +49,30 @@ defaults to port 4173, so keep it on 5173.
 
 ## Deploy
 
-The backend goes on Railway and the frontend on Vercel. Deploy the backend first, because
+The backend goes on Render and the frontend on Vercel. Deploy the backend first, because
 the frontend needs its address.
 
-**Railway (backend)**
+**Render (backend)**
 
-1. New project, deploy from your GitHub repo. In the service settings set **Root
-   Directory** to `backend`. Railway picks up the `Procfile` (gunicorn) and
-   `.python-version` (Python 3.12) by itself.
-2. Under Settings, Networking, generate a public domain.
-3. Under Variables add the following. Railway redeploys each time a variable changes.
+1. New, Web Service, and pick your GitHub repo. Render asks for a card on file to create
+   a service through its API, but the Free instance type costs nothing.
+2. Set **Root Directory** to `backend`, the language to Python, and the instance type to
+   Free.
+3. Build command: `pip install -r requirements.txt`
+4. Start command:
+   `gunicorn config.wsgi --workers 1 --threads 4 --timeout 60 --bind 0.0.0.0:$PORT`
+5. Add these environment variables:
+   - `PYTHON_VERSION`: `3.12.10`.
    - `TOMTOM_API_KEY`: your TomTom key.
    - `DJANGO_SECRET_KEY`: a long random string.
-   - `DJANGO_ALLOWED_HOSTS`: the Railway domain from step 2, for example
-     `my-app.up.railway.app` (no `https://`).
+   - `DJANGO_ALLOWED_HOSTS`: the address Render gives the service, for example
+     `my-app.onrender.com` (no `https://`). Render may add a suffix to the name, so copy
+     the real one.
    - `CORS_ALLOWED_ORIGINS`: the Vercel address, for example `https://my-app.vercel.app`
      (no trailing slash).
    - Leave `DJANGO_DEBUG` unset.
+
+Changing a variable needs a redeploy to take effect.
 
 If `DJANGO_ALLOWED_HOSTS` is missing, Django answers every request with 400 "Bad Request"
 (it only allows localhost). If `CORS_ALLOWED_ORIGINS` is missing, the page loads but the
@@ -75,9 +82,10 @@ unavailable" and Find routes shows "Cannot reach the server".
 **Vercel (frontend)**
 
 1. Import the same repo. Set **Root Directory** to `frontend`. Vercel detects Vite.
-2. Add the environment variable `VITE_API_URL=https://<railway domain>` with no trailing
+2. Add the environment variable `VITE_API_URL=https://<render address>` with no trailing
    slash. It is read at build time, so redeploy after changing it.
-3. Put the Vercel address into Railway's `CORS_ALLOWED_ORIGINS`, then open the app.
+3. Put the Vercel address into Render's `CORS_ALLOWED_ORIGINS`, redeploy the backend, then
+   open the app.
 
 ## How it works
 
@@ -119,6 +127,8 @@ The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and w
 - TomTom sometimes returns fewer than three routes. San Diego to Bangor returned one,
   and the app says "Only 1 route found". There is no code to invent extra routes.
 - Very long trips can take up to about 25 seconds, mostly TomTom's routing call.
+- The backend is on Render's free plan, which sleeps after 15 minutes without traffic. The
+  first visit after that takes about a minute while it wakes, and the cache starts empty.
 - The cache lives in the server's memory and is lost when the server restarts. Past one
   server process it would need Redis.
 - ETAs are continuous driving time. Rest breaks are not modelled.
