@@ -40,7 +40,7 @@ ROOT_URLCONF = 'config.urls'
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# No database.
+# No database: results are computed per request and cached in memory.
 DATABASES = {}
 
 LANGUAGE_CODE = 'en-us'
@@ -56,6 +56,15 @@ CORS_ALLOWED_ORIGINS = [
     for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
     if origin
 ]
+
+TOMTOM_API_KEY = os.environ.get('TOMTOM_API_KEY', '')
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'OPTIONS': {'MAX_ENTRIES': 2000},
+    }
+}
 
 # Public JSON API: no login, no sessions, JSON only.
 REST_FRAMEWORK = {
