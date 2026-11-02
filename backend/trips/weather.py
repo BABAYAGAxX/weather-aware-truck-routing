@@ -1,24 +1,31 @@
 """Open-Meteo hourly forecasts, cached per square. The other file that calls an outside service."""
 
+import logging
 import math
 from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
 import httpx
+from django.conf import settings
 from django.core.cache import cache
 
 from trips.domain.geometry import Point
 from trips.domain.risk import Weather
 
-URL = "https://api.open-meteo.com/v1/forecast"
 TIMEOUT_S = 10
 FORECAST_DAYS = 14
 CACHE_SECONDS = 30 * 60
 
+logger = logging.getLogger(__name__)
+
 
 class WeatherUnavailable(Exception):
     """Open-Meteo could not give us a forecast. The message is safe to show the user."""
+
+
+class WeatherBusy(WeatherUnavailable):
+    """Open-Meteo refused the request because a rate limit was reached."""
 
 
 class OutOfForecast(Exception):
@@ -53,9 +60,10 @@ def _fetch(cells: list[Point]) -> dict[Point, Forecast]:
         "timeformat": "unixtime",
         "forecast_days": FORECAST_DAYS,
     }
+    headers = {"X-Proxy-Secret": settings.WEATHER_PROXY_SECRET}
     message = None
     try:
-        response = httpx.post(URL, data=form, timeout=TIMEOUT_S)
+        response = httpx.post(settings.WEATHER_URL, data=form, headers=headers, timeout=TIMEOUT_S)
         response.raise_for_status()
         blocks = response.json()
         if isinstance(blocks, dict):  # one location comes back as an object, not a list
@@ -64,10 +72,10 @@ def _fetch(cells: list[Point]) -> dict[Point, Forecast]:
             raise ValueError("wrong number of locations")
         return {cell: _parse(block["hourly"]) for cell, block in zip(cells, blocks)}
     except httpx.HTTPStatusError as error:
+        logger.warning("Weather request refused: %s %s", error.response.status_code, error.response.text[:200])
         if error.response.status_code == 429:
-            message = "The weather service is busy. Please try again in a minute."
-        else:
-            message = "The weather service returned an error. Please try again."
+            raise WeatherBusy("The weather service is busy. Please try again in a minute.") from None
+        message = "The weather service returned an error. Please try again."
     except httpx.HTTPError:
         message = "Could not reach the weather service. Please try again."
     except (ValueError, KeyError, TypeError):

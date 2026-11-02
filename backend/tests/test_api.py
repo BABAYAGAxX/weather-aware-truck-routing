@@ -7,7 +7,7 @@ from rest_framework.test import APIClient
 from trips import views
 from trips.planner import IntervalTooFine
 from trips.tomtom import RoutingError
-from trips.weather import OutOfForecast, WeatherUnavailable
+from trips.weather import OutOfForecast, WeatherBusy, WeatherUnavailable
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def test_bad_input_is_400_with_a_message(client, body, change):
 
 @pytest.mark.parametrize("error, status", [
     (IntervalTooFine("x"), 400), (OutOfForecast("x"), 400),
-    (RoutingError("x"), 502), (WeatherUnavailable("x"), 503),
+    (RoutingError("x"), 502), (WeatherUnavailable("x"), 503), (WeatherBusy("x"), 429),
 ])
 def test_failures_become_readable_errors(client, body, monkeypatch, error, status):
     monkeypatch.setattr(views, "plan_trip", Mock(side_effect=error))

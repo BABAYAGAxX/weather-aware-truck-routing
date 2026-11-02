@@ -5,9 +5,10 @@ import pytest
 from django.core.cache import cache
 
 from trips import weather
-from trips.weather import Forecast, OutOfForecast, WeatherUnavailable, get_forecasts
+from trips.weather import Forecast, OutOfForecast, WeatherBusy, WeatherUnavailable, get_forecasts
 
 UTC = timezone.utc
+URL = "https://weather.test/forecast"
 
 
 @pytest.fixture(autouse=True)
@@ -17,8 +18,9 @@ def clear_cache():
 
 @pytest.fixture
 def httpx_429(monkeypatch):
-    request = httpx.Request("POST", weather.URL)
-    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(429, request=request))
+    request = httpx.Request("POST", URL)
+    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
+        429, json={"error": True, "reason": "Daily API request limit exceeded."}, request=request))
 
 
 def forecast(hours=3):
@@ -62,9 +64,38 @@ def test_get_forecasts_skips_the_call_when_everything_is_cached(monkeypatch):
     assert len(calls) == 1
 
 
-def test_rate_limit_raises_weather_unavailable(httpx_429):
-    with pytest.raises(WeatherUnavailable, match="try again in a minute"):
+def test_rate_limit_raises_weather_busy(httpx_429):
+    with pytest.raises(WeatherBusy, match="try again in a minute"):
         weather._fetch([(1.0, 1.0)])
+
+
+def test_rate_limit_logs_the_reason_open_meteo_gave(httpx_429, caplog):
+    with pytest.raises(WeatherBusy):
+        weather._fetch([(1.0, 1.0)])
+    assert "Daily API request limit exceeded." in caplog.text
+
+
+def test_other_status_errors_are_not_reported_as_busy(monkeypatch):
+    monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
+        500, request=httpx.Request("POST", URL)))
+    with pytest.raises(WeatherUnavailable) as caught:
+        weather._fetch([(1.0, 1.0)])
+    assert not isinstance(caught.value, WeatherBusy)
+
+
+def test_fetch_uses_the_configured_address_and_secret(monkeypatch, settings):
+    settings.WEATHER_URL = URL
+    settings.WEATHER_PROXY_SECRET = "s3cret"
+    calls = []
+
+    def post(url, **kwargs):
+        calls.append((url, kwargs["headers"]))
+        return httpx.Response(200, json=[_location(1_793_318_400, [0.0, 0.0], [0.0, 0.0])],
+                              request=httpx.Request("POST", URL))
+
+    monkeypatch.setattr(httpx, "post", post)
+    weather._fetch([(1.0, 1.0)])
+    assert calls == [(URL, {"X-Proxy-Secret": "s3cret"})]
 
 
 def _location(start, rain, showers):
@@ -78,7 +109,7 @@ def _location(start, rain, showers):
 def test_fetch_reads_a_list_or_a_single_object(monkeypatch, wrap):
     blocks = [_location(1_793_318_400, [0.1, 0.0], [0.2, 0.0])]
     monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
-        200, json=wrap(blocks), request=httpx.Request("POST", weather.URL)))
+        200, json=wrap(blocks), request=httpx.Request("POST", URL)))
     result = weather._fetch([(1.0, 1.0)])[(1.0, 1.0)]
     assert result.start == datetime.fromtimestamp(1_793_318_400, UTC)
     assert result.start.tzinfo is not None
@@ -89,13 +120,13 @@ def test_fetch_reads_a_list_or_a_single_object(monkeypatch, wrap):
 def test_rain_plus_showers_is_rounded_so_a_band_edge_is_not_missed(monkeypatch):
     blocks = [_location(1_793_318_400, [0.01, 0.0], [0.09, 0.0])]
     monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
-        200, json=blocks, request=httpx.Request("POST", weather.URL)))
+        200, json=blocks, request=httpx.Request("POST", URL)))
     result = weather._fetch([(1.0, 1.0)])[(1.0, 1.0)]
     assert result.rain[0] == 0.1  # exact, so classify_rain reads Moderate
 
 
 def test_fetch_rejects_a_malformed_response(monkeypatch):
     monkeypatch.setattr(httpx, "post", lambda *args, **kwargs: httpx.Response(
-        200, json={"unexpected": 1}, request=httpx.Request("POST", weather.URL)))
+        200, json={"unexpected": 1}, request=httpx.Request("POST", URL)))
     with pytest.raises(WeatherUnavailable):
         weather._fetch([(1.0, 1.0)])

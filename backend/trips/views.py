@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from trips.planner import IntervalTooFine, plan_trip
 from trips.serializers import PlanSerializer, first_problem
 from trips.tomtom import RoutingError, search_places
-from trips.weather import OutOfForecast, WeatherUnavailable
+from trips.weather import OutOfForecast, WeatherBusy, WeatherUnavailable
 
 
 def _error(message, code):
@@ -39,5 +39,7 @@ def plan(request):
         return _error(error, status.HTTP_400_BAD_REQUEST)
     except RoutingError as error:
         return _error(error, status.HTTP_502_BAD_GATEWAY)
+    except WeatherBusy as error:
+        return _error(error, status.HTTP_429_TOO_MANY_REQUESTS)
     except WeatherUnavailable as error:
         return _error(error, status.HTTP_503_SERVICE_UNAVAILABLE)

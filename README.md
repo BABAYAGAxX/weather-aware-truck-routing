@@ -70,6 +70,8 @@ the frontend needs its address.
      the real one.
    - `CORS_ALLOWED_ORIGINS`: the Vercel address, for example `https://my-app.vercel.app`
      (no trailing slash).
+   - `WEATHER_URL`: `https://<vercel address>/api/weather`.
+   - `WEATHER_PROXY_SECRET`: a long random string, the same as `PROXY_SECRET` on Vercel.
    - Leave `DJANGO_DEBUG` unset.
 
 Changing a variable needs a redeploy to take effect.
@@ -84,7 +86,9 @@ unavailable" and Find routes shows "Cannot reach the server".
 1. Import the same repo. Set **Root Directory** to `frontend`. Vercel detects Vite.
 2. Add the environment variable `VITE_API_URL=https://<render address>` with no trailing
    slash. It is read at build time, so redeploy after changing it.
-3. Put the Vercel address into Render's `CORS_ALLOWED_ORIGINS`, redeploy the backend, then
+3. Add `PROXY_SECRET`, the same value as Render's `WEATHER_PROXY_SECRET`. Open-Meteo refused
+   Render's shared address, so `api/weather.js` forwards the backend's forecast requests.
+4. Put the Vercel address into Render's `CORS_ALLOWED_ORIGINS`, redeploy the backend, then
    open the app.
 
 ## How it works
@@ -130,7 +134,8 @@ unavailable" and Find routes shows "Cannot reach the server".
   server process it would need Redis.
 - ETAs are continuous driving time. Rest breaks are not modelled.
 - Free weather limits can make the app say "try again in a minute", for example after
-  two different cross-country searches in quick succession.
+  two different cross-country searches in quick succession. Hosted weather calls leave
+  through a shared Vercel address, so other apps can use up the same limit.
 - 10 mi spacing is refused on very long trips (over 550 weather locations). Pick 25 or
   50 mi, or Auto.
 - US only. No accounts, no saved trips.
@@ -167,5 +172,5 @@ Two places where this changed the outcome:
 
 ```
 backend/   Django + Django REST Framework (trips/ has the code, trips/domain/ the pure rules)
-frontend/  Vite + React + TypeScript + MUI + MapLibre
+frontend/  Vite + React + TypeScript + MUI + MapLibre (api/ has the Vercel weather function)
 ```
