@@ -134,7 +134,16 @@ minute, 5,000 an hour and 10,000 a day. Three things keep us inside it:
   every square already fetched, so only squares not seen yet need a new call.
 - **A limit of 550 locations a search.**
 
-If Open-Meteo still refuses a request, the user sees "try again in a minute".
+Open-Meteo applies these limits per IP address, and its terms warn that apps on hosts
+like Render and Vercel can hit them early, because those addresses are shared. The live
+backend did: Open-Meteo refused it with 429 on short first searches while the same call
+worked from a home connection. The terms suggest Cloudflare Workers, because Workers are
+limited per Cloudflare user. So hosted requests go through a small Worker (`worker/`).
+Moving the code to a Vercel function would not help, because the terms name Vercel too.
+
+If Open-Meteo still refuses a request, the API answers 429 and the user sees "try again
+in a minute". Any other weather failure is a 503. Open-Meteo's reason goes to the server
+log.
 
 ## Providers
 
@@ -144,7 +153,8 @@ If Open-Meteo still refuses a request, the user sees "try again in a minute".
   fewer, the UI shows them and says "Only 1 route found". Long trips can take up to
   about 25 s end to end (TomTom alone took 19.0 s on Seattle to Miami), so the routing
   timeout is 30 s.
-- Weather: Open-Meteo (no key, hourly, multi-point requests).
+- Weather: Open-Meteo (no key, hourly, multi-point requests), reached through the
+  Cloudflare Worker when hosted and directly when run locally.
 - Map: MapLibre GL.
 
 `tomtom.py` and `weather.py` are the only files that talk to these services.
@@ -157,7 +167,9 @@ change the cache setting to Redis.
 
 ## Hosting
 
-Frontend on Vercel, Django on Render's free plan. Gunicorn runs one process with four
+Frontend on Vercel, Django on Render's free plan, and the weather Worker on Cloudflare's
+free plan. The Worker only forwards POST requests to Open-Meteo's forecast address, and
+only when they carry a shared secret, so strangers cannot spend our limit. Gunicorn runs one process with four
 threads, so every request shares the one in-memory cache. The free plan sleeps after 15
 minutes without traffic, takes about a minute to wake, and starts with an empty cache. Gunicorn waits up to 60 s for a request,
 so a slow long-trip search is not cut off.

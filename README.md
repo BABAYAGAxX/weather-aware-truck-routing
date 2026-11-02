@@ -49,8 +49,21 @@ defaults to port 4173, so keep it on 5173.
 
 ## Deploy
 
-The backend goes on Render and the frontend on Vercel. Deploy the backend first, because
-the frontend needs its address.
+The weather Worker goes on Cloudflare, the backend on Render and the frontend on Vercel.
+Deploy them in that order, because each one needs the address of the one before it.
+
+**Cloudflare (weather Worker)**
+
+Open-Meteo's terms warn that apps on hosts like Render hit its per-IP limit early, and
+suggest Workers because those are limited per Cloudflare user. From the `worker` folder:
+
+```
+npx wrangler login
+npx wrangler deploy
+npx wrangler secret put PROXY_SECRET
+```
+
+Enter a long random string for the secret. Keep the address `deploy` prints.
 
 **Render (backend)**
 
@@ -70,6 +83,8 @@ the frontend needs its address.
      the real one.
    - `CORS_ALLOWED_ORIGINS`: the Vercel address, for example `https://my-app.vercel.app`
      (no trailing slash).
+   - `WEATHER_URL`: the Worker address.
+   - `WEATHER_PROXY_SECRET`: the same secret you gave the Worker.
    - Leave `DJANGO_DEBUG` unset.
 
 Changing a variable needs a redeploy to take effect.
@@ -171,5 +186,6 @@ Two places where this changed the outcome:
 ```
 backend/   Django + Django REST Framework (trips/ has the code, trips/domain/ the pure rules)
 frontend/  Vite + React + TypeScript + MUI + MapLibre
+worker/    Cloudflare Worker that forwards forecast requests to Open-Meteo
 docs/      DECISIONS.md (rules), DESIGN.md (structure)
 ```

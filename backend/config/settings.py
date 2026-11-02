@@ -59,6 +59,10 @@ CORS_ALLOWED_ORIGINS = [
 
 TOMTOM_API_KEY = os.environ.get('TOMTOM_API_KEY', '')
 
+# Hosted, these point at the Cloudflare Worker in worker/. Locally, Open-Meteo is called directly.
+WEATHER_URL = os.environ.get('WEATHER_URL', 'https://api.open-meteo.com/v1/forecast')
+WEATHER_PROXY_SECRET = os.environ.get('WEATHER_PROXY_SECRET', '')
+
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',

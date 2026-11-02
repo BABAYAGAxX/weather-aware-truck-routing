@@ -39,6 +39,9 @@ Django + DRF (2 views, no database)       Render
    |-- trips/weather.py   hourly forecast with per-square cache
    |-- trips/planner.py   the one function that ties it together
    `-- trips/domain/      pure rules, no network calls (risk, ranking, geometry)
+Cloudflare Worker (worker/index.js)       Cloudflare
+   |  forwards forecast requests when hosted
+Open-Meteo
 ```
 
 Everything happens inside one normal request. No background jobs, no database, no
@@ -134,7 +137,8 @@ within 30 minutes makes no weather calls.
 - `reason` is set on the first route only. `recommended` is `false` on every route
   when none is safe.
 - Errors return `{"detail": "..."}`: 400 for bad input, a refused interval or a time
-  outside the forecast, 502 when TomTom fails, 503 when Open-Meteo says to wait.
+  outside the forecast, 429 when Open-Meteo says to wait, 502 when TomTom fails, 503
+  for any other weather failure.
 
 ## Backend files
 
@@ -151,6 +155,7 @@ within 30 minutes makes no weather calls.
 | `config/settings.py` | Settings from environment variables and CORS |
 | `config/urls.py` | Maps `/api/plan` and `/api/places` to the views |
 | `Procfile` | The gunicorn start command, for hosts that read it. Render's is set in its dashboard |
+| `../worker/index.js` | Cloudflare Worker that forwards forecast requests to Open-Meteo |
 
 ## Frontend files
 
