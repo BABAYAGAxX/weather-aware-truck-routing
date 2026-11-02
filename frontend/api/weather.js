@@ -1,5 +1,5 @@
 // Forwards the backend's forecast requests to Open-Meteo, because Open-Meteo refused
-// Render's shared IP address. See docs/DECISIONS.md.
+// Render's shared IP address.
 const OPEN_METEO = "https://api.open-meteo.com/v1/forecast";
 
 export async function POST(request) {

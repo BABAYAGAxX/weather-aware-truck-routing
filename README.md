@@ -93,9 +93,6 @@ unavailable" and Find routes shows "Cannot reach the server".
 
 ## How it works
 
-The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and why) and
-[docs/DESIGN.md](docs/DESIGN.md) (the structure and the measurements). The short version:
-
 1. **One request per search.** The browser sends one `POST /api/plan`. Django has no
    database and no background jobs, so everything happens inside that request.
 2. **Routes.** `trips/tomtom.py` asks TomTom once for the routes. It returns the road
@@ -150,10 +147,10 @@ The full reasoning is in [docs/DECISIONS.md](docs/DECISIONS.md) (the rules and w
 I built this with Claude Code agents, and kept a human in the loop for decisions.
 
 - **Design council.** Before any code, five reviewer agents, chaired by Fable, argued
-  over the design. The result is in `docs/DESIGN.md` and `docs/DECISIONS.md`.
+  over the design.
 - **Live tests before decisions.** Real TomTom and Open-Meteo calls settled questions
   such as how many routes TomTom returns, how slow long trips are, and how Open-Meteo
-  counts usage. The numbers are in the table at the top of `docs/DESIGN.md`.
+  counts usage.
 - **Builder plus reviewer.** Each task had one agent write it and a separate agent
   review it, and the reviewer saw the code, not the builder's conclusions.
 
@@ -176,5 +173,4 @@ Two places where this changed the outcome:
 ```
 backend/   Django + Django REST Framework (trips/ has the code, trips/domain/ the pure rules)
 frontend/  Vite + React + TypeScript + MUI + MapLibre (api/ has the Vercel weather function)
-docs/      DECISIONS.md (rules), DESIGN.md (structure)
 ```

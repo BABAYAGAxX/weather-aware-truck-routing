@@ -1,4 +1,4 @@
-"""Weather risk classification. Rules are documented in docs/DECISIONS.md."""
+"""Weather risk classification."""
 
 from dataclasses import dataclass
 from enum import IntEnum
