@@ -1,4 +1,4 @@
-"""The one function that ties routes, weather and rules together (steps 2 to 10 in docs/DESIGN.md)."""
+"""The one function that ties routes, weather and rules together."""
 
 from datetime import datetime, timedelta, timezone
 

@@ -1,4 +1,4 @@
-"""Checkpoint spacing and route ranking. Rules are documented in docs/DECISIONS.md."""
+"""Checkpoint spacing and route ranking."""
 
 from collections.abc import Sequence
 from dataclasses import dataclass
