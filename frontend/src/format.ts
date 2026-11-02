@@ -13,10 +13,11 @@ export function formatEta(iso: string): string {
   return new Date(iso).toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
 }
 
-// Like "+6 h, Sat 8:00 PM PDT". Adding to the timestamp is UTC math; only the text is local.
+// Like "Departure +6h · Sat 8:00 pm". Adding to the timestamp is UTC math; only the text is local.
 export function formatForecastHour(departure: string, hour: number): string {
   const time = new Date(new Date(departure).getTime() + hour * 3_600_000)
+  if (isNaN(time.getTime())) return '' // the departure field is empty
   const day = time.toLocaleDateString([], { weekday: 'short' })
-  const clock = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' })
-  return `+${hour} h, ${day} ${clock}`
+  const clock = time.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
+  return `Departure +${hour}h · ${day} ${clock}`
 }

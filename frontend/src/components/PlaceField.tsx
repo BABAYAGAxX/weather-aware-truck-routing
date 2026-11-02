@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Autocomplete from '@mui/material/Autocomplete'
 import TextField from '@mui/material/TextField'
 import { searchPlaces, type Place } from '../api'
+import { fieldSx } from '../panelStyles'
 
 interface Props {
   label: string
@@ -68,7 +69,17 @@ export default function PlaceField({ label, value, onChange }: Props) {
       loading={loading}
       loadingText="Searching..."
       noOptionsText={noOptionsText}
-      renderInput={(params) => <TextField {...params} label={label} size="small" />}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant="filled"
+          hiddenLabel
+          size="small"
+          placeholder={label}
+          sx={fieldSx}
+          slotProps={{ ...params.slotProps, htmlInput: { ...params.slotProps.htmlInput, 'aria-label': label } }}
+        />
+      )}
     />
   )
 }

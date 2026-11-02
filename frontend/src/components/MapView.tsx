@@ -24,6 +24,7 @@ import { showCheckpointPopup, showRoutePopup } from './mapPopups'
 
 interface Props {
   plan: Plan | null
+  departure: string
   selectedId: string | null
   onSelect: (id: string) => void
 }
@@ -154,7 +155,7 @@ function addLayers(map: MapLibreMap) {
   })
 }
 
-export default function MapView({ plan, selectedId, onSelect }: Props) {
+export default function MapView({ plan, departure, selectedId, onSelect }: Props) {
   const container = useRef<HTMLDivElement>(null)
   const [map, setMap] = useState<MapLibreMap | null>(null) // stays null until the layers exist, so a plan can safely wait
   const clickedPoint = useRef<LngLat | null>(null) // where a route line was clicked, for the popup that selection opens
@@ -257,6 +258,7 @@ export default function MapView({ plan, selectedId, onSelect }: Props) {
       {/* A sibling of the map box, because MapLibre owns everything inside it. */}
       <HourSlider
         plan={map ? plan : null} // no plan keeps the slider disabled until the map's layers exist to show an hour
+        departure={departure}
         onHourChange={(hour) => {
           if (map && plan) showHour(map, plan.heatmap.cells, hour)
         }}

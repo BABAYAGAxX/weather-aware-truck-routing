@@ -12,7 +12,14 @@ import { UI_COLORS } from './risk'
 // MapLibre is large, so it downloads after the form has painted. If that fails, the form stays on the page.
 const MapView = lazy(() => import('./components/MapView').catch(() => ({ default: MapUnavailable })))
 
+// datetime-local wants "YYYY-MM-DDTHH:mm" in the browser's own time zone.
+function localInputValue(date: Date): string {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return local.toISOString().slice(0, 16)
+}
+
 export default function App() {
+  const [departure, setDeparture] = useState(() => localInputValue(new Date(Date.now() + 3_600_000)))
   const [plan, setPlan] = useState<Plan | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -41,28 +48,29 @@ export default function App() {
           flexShrink: 0,
           boxSizing: 'border-box',
           bgcolor: UI_COLORS.panel,
-          borderRight: { md: `1px solid ${UI_COLORS.border}` },
-          borderBottom: { xs: `1px solid ${UI_COLORS.border}`, md: 'none' },
-          p: 3,
+          color: UI_COLORS.onPanel,
+          p: 2.75,
           display: 'flex',
           flexDirection: 'column',
           gap: 3,
           overflowY: { md: 'auto' },
           maxHeight: { md: '100vh' },
+          scrollbarWidth: 'thin',
+          scrollbarColor: `${UI_COLORS.panelDark} transparent`,
         }}
       >
         <Box component="header">
-          <Typography component="h1" sx={{ fontSize: '1.25rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
+          <Typography component="h1" sx={{ fontSize: '1.375rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
             Weather-aware truck routing
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" sx={{ mt: 0.5 }}>
             Compare three routes by the weather your truck will meet, hour by hour.
           </Typography>
         </Box>
 
-        <TripForm onSubmit={search} loading={loading} />
+        <TripForm departure={departure} onDepartureChange={setDeparture} onSubmit={search} loading={loading} />
 
-        <Box sx={{ minHeight: 4 }}>{loading && <LinearProgress aria-label="Searching for routes" />}</Box>
+        {loading && <LinearProgress color="inherit" aria-label="Searching for routes" />}
 
         {error && <Alert severity="error">{error}</Alert>}
 
@@ -81,7 +89,7 @@ export default function App() {
         sx={{ flex: 1, minHeight: { xs: 360, md: 'auto' }, display: 'flex', bgcolor: UI_COLORS.page }}
       >
         <Suspense fallback={<Typography color="text.secondary" sx={{ m: 'auto' }}>Loading map...</Typography>}>
-          <MapView plan={plan} selectedId={selectedId} onSelect={setSelectedId} />
+          <MapView plan={plan} departure={departure} selectedId={selectedId} onSelect={setSelectedId} />
         </Suspense>
       </Box>
     </Box>

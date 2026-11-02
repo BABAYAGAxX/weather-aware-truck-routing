@@ -95,13 +95,11 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
       })}
 
       {routes.length < 3 && (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2">
           Only {routes.length} {routes.length === 1 ? 'route' : 'routes'} found.
         </Typography>
       )}
-      <Typography variant="body2" color="text.secondary">
-        Checkpoints every {intervalMiles} mi
-      </Typography>
+      <Typography variant="body2">Checkpoints every {intervalMiles} mi</Typography>
     </Box>
   )
 }

@@ -23,7 +23,10 @@ export const ROUTE_COLORS: Record<string, string> = {
 // Colors for the page itself (panel, borders, page background).
 export const UI_COLORS = {
   page: '#eef1f4',
-  panel: '#ffffff',
+  panel: '#1565c0',
+  panelDark: '#0d47a1',
+  onPanel: '#ffffff',
+  sliderRail: '#dde3ee',
   border: '#d5dbe2',
   mapBackground: '#f4f4f2',
   checkpointEdge: '#ffffff',
