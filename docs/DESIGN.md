@@ -26,6 +26,7 @@ The smallest system that meets every requirement in the brief. Rule details live
 | Forecast gaps | 0 missing values in 240 hours for 30 points | No gap-filling logic |
 | Address search | TomTom typeahead works with `countrySet=US` | Same key, same vendor |
 | Slider repaint | Seattle to Miami, 163 squares, 4x CPU slowdown, keyboard sweep (6 runs, 3 for step to screen). Feature state: 0 tile reloads, 22 to 24 ms from step to screen, 2 frames over 20 ms, every hour painted in one frame. Global state: 4 tile reloads per step, 44 to 54 ms, 11 frames over 20 ms, a step could paint over more than one frame. `setPaintProperty` reloads just the same | Use feature state |
+| Can Vercel reach Open-Meteo when Render is refused? (2026-11-02) | Yes. Render got 429 "Daily API request limit exceeded", while a Vercel function got 200, including 550 locations, 6.4 MB, in 2.6 s when streamed | Forward through `api/weather.js` |
 | Hosted speed on Render's free plan | Dallas to Atlanta 5.8 s, then 1.0 s repeated. Seattle to Miami 15.2 s, then 2.7 s repeated | A long-trip request of up to about 25 s is safe, with gunicorn set to 60 s |
 
 ## Architecture
@@ -39,8 +40,9 @@ Django + DRF (2 views, no database)       Render
    |-- trips/weather.py   hourly forecast with per-square cache
    |-- trips/planner.py   the one function that ties it together
    `-- trips/domain/      pure rules, no network calls (risk, ranking, geometry)
-Cloudflare Worker (worker/index.js)       Cloudflare
-   |  forwards forecast requests when hosted
+   |  forecast requests, when hosted
+Function (frontend/api/weather.js)        Vercel
+   |
 Open-Meteo
 ```
 
@@ -155,12 +157,12 @@ within 30 minutes makes no weather calls.
 | `config/settings.py` | Settings from environment variables and CORS |
 | `config/urls.py` | Maps `/api/plan` and `/api/places` to the views |
 | `Procfile` | The gunicorn start command, for hosts that read it. Render's is set in its dashboard |
-| `../worker/index.js` | Cloudflare Worker that forwards forecast requests to Open-Meteo |
 
 ## Frontend files
 
 | File | Job |
 |---|---|
+| `api/weather.js` | Vercel function that forwards forecast requests to Open-Meteo |
 | `src/main.tsx` | Mounts the app |
 | `src/App.tsx` | Layout, search and selected route state |
 | `src/api.ts` | Types and fetch calls |
