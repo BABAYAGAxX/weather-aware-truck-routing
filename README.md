@@ -145,17 +145,10 @@ unavailable" and Find routes shows "Cannot reach the server".
 - A 50 mi interval can miss a narrow storm. The heatmap covers the whole corridor for
   that reason.
 
-## How AI agents were used
+## What testing changed
 
-I built this with Claude Code agents, and kept a human in the loop for decisions.
-
-- **Design council.** Before any code, five reviewer agents, chaired by Fable, argued
-  over the design.
-- **Live tests before decisions.** Real TomTom and Open-Meteo calls settled questions
-  such as how many routes TomTom returns, how slow long trips are, and how Open-Meteo
-  counts usage.
-- **Builder plus reviewer.** Each task had one agent write it and a separate agent
-  review it, and the reviewer saw the code, not the builder's conclusions.
+Real TomTom and Open-Meteo calls settled questions such as how many routes TomTom
+returns, how slow long trips are, and how Open-Meteo counts usage.
 
 Two places where this changed the outcome:
 
