@@ -30,4 +30,7 @@ export const UI_COLORS = {
   border: '#d5dbe2',
   mapBackground: '#f4f4f2',
   checkpointEdge: '#ffffff',
+  tile: '#f1f4f9',
+  recommendedBg: '#e3f4e8',
+  recommendedText: '#1b7a3d',
 }

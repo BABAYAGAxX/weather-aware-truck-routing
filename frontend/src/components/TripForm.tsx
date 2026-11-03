@@ -44,33 +44,36 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
       <PlaceField label="From" value={origin} onChange={setOrigin} />
       <PlaceField label="To" value={destination} onChange={setDestination} />
-      <TextField
-        label="Departure"
-        type="datetime-local"
-        variant="filled"
-        size="small"
-        sx={fieldSx}
-        value={departure}
-        onChange={(event) => onDepartureChange(event.target.value)}
-        slotProps={{ inputLabel: { shrink: true } }}
-      />
-      <TextField
-        placeholder="Load"
-        type="number"
-        variant="filled"
-        hiddenLabel
-        size="small"
-        sx={fieldSx}
-        value={load}
-        onChange={(event) => setLoad(event.target.value)}
-        slotProps={{
-          htmlInput: { min: 1, max: 80000, 'aria-label': 'Load in pounds' },
-          input: { endAdornment: <InputAdornment position="end">lb</InputAdornment> },
-        }}
-      />
+      {/* One row, so all three route cards fit under the form on a laptop screen. */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 112px', gap: 1 }}>
+        <TextField
+          label="Departure"
+          type="datetime-local"
+          variant="filled"
+          size="small"
+          sx={fieldSx}
+          value={departure}
+          onChange={(event) => onDepartureChange(event.target.value)}
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
+        <TextField
+          label="Load"
+          type="number"
+          variant="filled"
+          size="small"
+          sx={fieldSx}
+          value={load}
+          onChange={(event) => setLoad(event.target.value)}
+          slotProps={{
+            inputLabel: { shrink: true },
+            htmlInput: { min: 1, max: 80000, 'aria-label': 'Load in pounds' },
+            input: { endAdornment: <InputAdornment position="end">lb</InputAdornment> },
+          }}
+        />
+      </Box>
       <Box>
         <Typography id="interval-label" variant="body2" sx={{ mb: 0.75, fontWeight: 600 }}>
           Check the weather every
@@ -131,8 +134,7 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
         size="large"
         disabled={loading || !complete}
         sx={{
-          mt: 0.5,
-          height: 48,
+          height: 44,
           borderRadius: '24px',
           textTransform: 'none',
           bgcolor: UI_COLORS.onPanel,
