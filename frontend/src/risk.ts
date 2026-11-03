@@ -23,14 +23,20 @@ export const ROUTE_COLORS: Record<string, string> = {
 // Colors for the page itself (panel, borders, page background).
 export const UI_COLORS = {
   page: '#eef1f4',
-  panel: '#1565c0',
-  panelDark: '#0d47a1',
-  onPanel: '#ffffff',
-  sliderRail: '#dde3ee',
-  border: '#d5dbe2',
+  panel: '#ffffff',
+  panelEdge: '#e2e2e2',
+  ink: '#111111', // text, the selected spacing option, the search button and the slider
+  inkSoft: '#5c5c5c',
+  onInk: '#ffffff',
+  field: '#f4f4f4',
+  fieldEdge: '#e4e4e4',
+  fieldText: '#6b6f75',
+  scrollbar: '#cfcfcf',
+  sliderRail: '#e6e6e6',
+  border: '#eef0f3',
   mapBackground: '#f4f4f2',
   checkpointEdge: '#ffffff',
-  tile: '#f1f4f9',
+  tile: '#f4f4f4',
   recommendedBg: '#e3f4e8',
   recommendedText: '#1b7a3d',
 }

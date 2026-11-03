@@ -20,7 +20,7 @@ interface Props {
 
 const SPACINGS: Interval[] = ['auto', 10, 25, 50]
 const SPACING_INSET = 3
-const SPACING_SLIDE = '250ms ease'
+const SPACING_SLIDE = '300ms cubic-bezier(0.4, 0, 0.2, 1)'
 
 export default function TripForm({ departure, onDepartureChange, onSubmit, loading }: Props) {
   const [origin, setOrigin] = useState<Place | null>(null)
@@ -75,10 +75,18 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
         />
       </Box>
       <Box>
-        <Typography id="interval-label" variant="body2" sx={{ mb: 0.75, fontWeight: 600 }}>
+        <Typography id="interval-label" variant="body2" sx={{ mb: 0.75, fontWeight: 500 }}>
           Check the weather every
         </Typography>
-        <Box sx={{ position: 'relative', bgcolor: UI_COLORS.onPanel, borderRadius: '12px', p: `${SPACING_INSET}px` }}>
+        <Box
+          sx={{
+            position: 'relative',
+            bgcolor: UI_COLORS.field,
+            boxShadow: `inset 0 0 0 1px ${UI_COLORS.fieldEdge}`,
+            borderRadius: '12px',
+            p: `${SPACING_INSET}px`,
+          }}
+        >
           {/* One pill slides under the buttons, which stay transparent. */}
           <Box
             aria-hidden
@@ -88,8 +96,8 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
               bottom: SPACING_INSET,
               left: SPACING_INSET,
               width: `calc((100% - ${2 * SPACING_INSET}px) / ${SPACINGS.length})`,
-              borderRadius: '10px',
-              bgcolor: UI_COLORS.panelDark,
+              borderRadius: '9px',
+              bgcolor: UI_COLORS.ink,
               transform: `translateX(${SPACINGS.indexOf(spacing) * 100}%)`,
               transition: `transform ${SPACING_SLIDE}`,
               '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
@@ -105,16 +113,17 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
               '& .MuiToggleButtonGroup-grouped': {
                 border: 0,
                 m: 0,
-                borderRadius: '10px',
+                borderRadius: '9px',
                 textTransform: 'none',
-                color: 'text.primary',
+                fontWeight: 400,
+                color: UI_COLORS.ink,
                 transition: `color ${SPACING_SLIDE}`,
                 '&.Mui-selected, &.Mui-selected:hover': {
                   bgcolor: 'transparent',
-                  color: UI_COLORS.onPanel,
-                  fontWeight: 600,
+                  color: UI_COLORS.onInk,
+                  fontWeight: 500,
                 },
-                '&.Mui-focusVisible': { outline: `2px solid ${UI_COLORS.panel}`, outlineOffset: 1 },
+                '&.Mui-focusVisible': { outline: `2px solid ${UI_COLORS.ink}`, outlineOffset: 1 },
               },
             }}
             value={spacing}
@@ -137,11 +146,16 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
           height: 44,
           borderRadius: '24px',
           textTransform: 'none',
-          bgcolor: UI_COLORS.onPanel,
-          color: UI_COLORS.panel,
-          '&:hover': { bgcolor: UI_COLORS.onPanel },
-          '&.Mui-disabled': { bgcolor: UI_COLORS.onPanel, color: UI_COLORS.panel, boxShadow: 2 },
-          '&.Mui-focusVisible': { outline: `2px solid ${UI_COLORS.onPanel}`, outlineOffset: 2 },
+          fontWeight: 500,
+          letterSpacing: '0.3px',
+          bgcolor: UI_COLORS.ink,
+          color: UI_COLORS.onInk,
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+          transition: 'transform 150ms ease, box-shadow 150ms ease',
+          '&:hover': { bgcolor: UI_COLORS.ink, transform: 'translateY(-1px)', boxShadow: '0 6px 16px rgba(0, 0, 0, 0.28)' },
+          '&.Mui-disabled': { bgcolor: UI_COLORS.ink, color: UI_COLORS.onInk, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)' },
+          '&.Mui-focusVisible': { outline: `2px solid ${UI_COLORS.ink}`, outlineOffset: 2 },
+          '@media (prefers-reduced-motion: reduce)': { transition: 'none', '&:hover': { transform: 'none' } },
         }}
       >
         {loading ? 'Searching...' : 'Find routes'}

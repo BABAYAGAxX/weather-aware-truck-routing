@@ -49,7 +49,8 @@ export default function App() {
           flexShrink: 0,
           boxSizing: 'border-box',
           bgcolor: UI_COLORS.panel,
-          color: UI_COLORS.onPanel,
+          color: UI_COLORS.ink,
+          borderRight: { md: `1px solid ${UI_COLORS.panelEdge}` },
           p: 2.25,
           display: 'flex',
           flexDirection: 'column',
@@ -61,14 +62,14 @@ export default function App() {
           overflowY: { md: 'auto' },
           maxHeight: { md: '100vh' },
           scrollbarWidth: 'thin',
-          scrollbarColor: `${UI_COLORS.panelDark} transparent`,
+          scrollbarColor: `${UI_COLORS.scrollbar} transparent`,
         }}
       >
         <Box component="header">
-          <Typography component="h1" sx={{ fontSize: '1.375rem', fontWeight: 600, letterSpacing: '-0.01em' }}>
+          <Typography component="h1" sx={{ fontSize: '1.3125rem', fontWeight: 500, letterSpacing: '-0.2px' }}>
             Weather-aware truck routing
           </Typography>
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
+          <Typography variant="body2" sx={{ mt: 0.5, lineHeight: 1.45, color: UI_COLORS.inkSoft }}>
             Compare three routes by the weather your truck will meet, hour by hour.
           </Typography>
         </Box>

@@ -89,7 +89,7 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
           <Card
             key={route.id}
             variant="outlined"
-            sx={{ borderWidth: 2, borderColor: selected ? color : 'transparent', borderRadius: 3 }}
+            sx={{ borderWidth: 2, borderColor: selected ? color : UI_COLORS.fieldEdge, borderRadius: 3 }}
           >
             <CardActionArea
               aria-pressed={selected}

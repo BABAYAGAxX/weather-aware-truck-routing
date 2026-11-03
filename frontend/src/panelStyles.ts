@@ -9,16 +9,17 @@ export function panelGap(base: number): string {
   return `calc(${base}px + var(--panel-space, 0px))`
 }
 
-// White rounded fields on the blue panel. The ring sits outside the field, so focus shows against the blue.
+// Light grey rounded fields on the white panel. The ring sits outside the field, so focus is easy to see.
 export const fieldSx = {
   '& .MuiFilledInput-root': {
-    bgcolor: UI_COLORS.onPanel,
+    bgcolor: UI_COLORS.field,
+    boxShadow: `inset 0 0 0 1px ${UI_COLORS.fieldEdge}`, // a shadow, not a border, so the field stays the same height
     borderRadius: '12px',
-    '&:hover, &.Mui-focused': { bgcolor: UI_COLORS.onPanel },
+    '&:hover, &.Mui-focused': { bgcolor: UI_COLORS.field },
     '&::before, &::after': { display: 'none' },
-    '&.Mui-focused': { outline: `2px solid ${UI_COLORS.onPanel}`, outlineOffset: 2 },
+    '&.Mui-focused': { outline: `2px solid ${UI_COLORS.ink}`, outlineOffset: 2 },
   },
-  '& .MuiFilledInput-input::placeholder': { opacity: 0.7 },
-  '& .MuiInputLabel-root': { color: UI_COLORS.panel },
-  '& .MuiInputAdornment-root .MuiTypography-root': { color: UI_COLORS.panel },
+  '& .MuiFilledInput-input::placeholder': { color: UI_COLORS.fieldText, opacity: 1 },
+  '& .MuiInputLabel-root, & .MuiInputLabel-root.Mui-focused': { color: UI_COLORS.ink, fontWeight: 500 },
+  '& .MuiInputAdornment-root .MuiTypography-root': { color: UI_COLORS.fieldText },
 }
