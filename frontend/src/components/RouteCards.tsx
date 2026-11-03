@@ -89,6 +89,13 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
               <Typography component="span" variant="body2" color="text.secondary">
                 Average risk {route.average_risk.toFixed(2)} of 4
               </Typography>
+
+              {route.nearby_risk && (
+                <Typography component="span" variant="body2" color="warning.dark">
+                  Passes near {RISK_LABELS[route.nearby_risk.risk]} weather at mile {formatMiles(route.nearby_risk.mile)}.
+                  Not counted in the miles above.
+                </Typography>
+              )}
             </CardActionArea>
           </Card>
         )

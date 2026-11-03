@@ -31,6 +31,7 @@ export interface Route {
   severe_miles: number
   high_miles: number
   average_risk: number
+  nearby_risk: { mile: number; risk: number } | null // a storm in a checkpoint's square, not counted in the miles
   geometry: [number, number][]
   checkpoints: Checkpoint[]
 }

@@ -9,6 +9,7 @@ from trips.domain.geometry import (
     corridor_cells,
     cumulative_lengths,
     elapsed_at,
+    heat_cell,
     point_at_fraction,
     snap,
 )
@@ -22,7 +23,7 @@ from trips.domain.ranking import (
     resolve_interval,
     summarize_route,
 )
-from trips.domain.risk import checkpoint_cause, classify_checkpoint
+from trips.domain.risk import RiskLevel, checkpoint_cause, classify_checkpoint
 from trips.tomtom import RouteData, fetch_routes
 from trips.weather import Forecast, get_forecasts
 
@@ -78,6 +79,21 @@ def _checkpoint(stop: tuple[float, Point, datetime], forecasts: dict[Point, Fore
     }
 
 
+def _nearby_risk(stops, checkpoints, forecasts, cell_deg, load_lb) -> dict | None:
+    """The first of the worst squares rated Severe or above and worse than its own checkpoint.
+
+    A square reads one forecast at its center, so a storm there can miss a checkpoint inside it.
+    This only warns the user. Ranking and risk miles still come from the checkpoints.
+    """
+    worst = None
+    for (mile, position, eta), checkpoint in zip(stops, checkpoints):
+        square = forecasts[heat_cell(position, cell_deg)].weather_at(eta)
+        risk = int(classify_checkpoint(square, load_lb))
+        if risk >= RiskLevel.SEVERE and risk > checkpoint["risk"] and (worst is None or risk > worst["risk"]):
+            worst = {"mile": round(mile, 1), "risk": risk}
+    return worst
+
+
 def _heat_cell(cell: Point, forecast: Forecast, depart_at: datetime, load_lb: float) -> dict:
     """Step 9: risk for each hour from departure."""
     return {
@@ -98,7 +114,7 @@ def _geometry(points: list[Point]) -> list[list[float]]:
     return [[round(lon, 5), round(lat, 5)] for lat, lon in kept]
 
 
-def _route_result(route_id, route, stops, forecasts, depart_at, load_lb) -> tuple[dict, RouteRisk]:
+def _route_result(route_id, route, stops, forecasts, depart_at, load_lb, cell_deg) -> tuple[dict, RouteRisk]:
     """Step 8 for one route: its checkpoints, then the summary used for ranking."""
     checkpoints = [_checkpoint(stop, forecasts, load_lb) for stop in stops]
     summary = summarize_route(
@@ -113,6 +129,7 @@ def _route_result(route_id, route, stops, forecasts, depart_at, load_lb) -> tupl
         "severe_miles": round(summary.severe_miles, 1),
         "high_miles": round(summary.high_miles, 1),
         "average_risk": round(summary.average_risk, 2),
+        "nearby_risk": _nearby_risk(stops, checkpoints, forecasts, cell_deg, load_lb),
         "geometry": _geometry(route.points),
         "checkpoints": checkpoints,
     }
@@ -146,7 +163,7 @@ def plan_trip(
     # Steps 7 and 8: one weather call, then classify each route's checkpoints.
     forecasts = get_forecasts(locations)
     built = [
-        _route_result(route_id, route, route_stops, forecasts, depart_at, load_lb)
+        _route_result(route_id, route, route_stops, forecasts, depart_at, load_lb, cell_deg)
         for route_id, route, route_stops in zip("ABC", routes, stops)
     ]
 

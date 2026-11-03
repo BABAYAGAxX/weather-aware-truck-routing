@@ -139,6 +139,9 @@ unavailable" and Find routes shows "Cannot reach the server".
 - 10 mi spacing is refused on very long trips (over 550 weather locations). Pick 25 or
   50 mi, or Auto.
 - US only. No accounts, no saved trips.
+- A heatmap square reads one forecast at its center, so it can disagree with a checkpoint
+  inside it. Risk miles and ranking use checkpoints only. When a square is Severe or No
+  Travel and worse than its checkpoint, the route card says "Passes near..." instead.
 - A 50 mi interval can miss a narrow storm. The heatmap covers the whole corridor for
   that reason.
 

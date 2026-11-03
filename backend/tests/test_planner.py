@@ -146,6 +146,33 @@ def test_nothing_is_recommended_when_every_route_is_stormy(plan):
     assert [r["recommended"] for r in routes] == [False, False, False]
 
 
+def storm_in_square(square, rain=2.0):
+    """Calm everywhere except one heatmap square, whose center has a No Travel downpour."""
+    return lambda cell: fake_forecast([10.0] * 72, rain=rain if cell == square else 0.0)
+
+
+def test_storm_in_a_checkpoints_square_is_flagged_but_not_counted(plan):
+    # 100 mi uses 10 mi spacing and 0.25 degree squares. Mile 10 is at -99.8, inside -99.75.
+    route = plan(forecast_for=storm_in_square((35.0, -99.75)))["routes"][0]
+    assert route["nearby_risk"] == {"mile": 10.0, "risk": 4}
+    assert route["no_travel_miles"] == 0
+
+
+def test_nearby_risk_is_empty_in_calm_weather(plan):
+    assert plan()["routes"][0]["nearby_risk"] is None
+
+
+def test_nearby_risk_ignores_a_square_below_severe(plan):
+    route = plan(forecast_for=storm_in_square((35.0, -99.75), rain=0.3))["routes"][0]
+    assert route["nearby_risk"] is None
+
+
+def test_nearby_risk_ignores_a_square_the_checkpoint_already_counts(plan):
+    route = plan(weather=Weather(10, 2.0, 0))["routes"][0]
+    assert route["no_travel_miles"] == 100
+    assert route["nearby_risk"] is None
+
+
 def test_only_best_route_has_a_reason(plan):
     routes = plan()["routes"]
     assert routes[0]["reason"] and all(r["reason"] is None for r in routes[1:])

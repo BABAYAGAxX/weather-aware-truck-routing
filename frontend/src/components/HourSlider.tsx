@@ -93,6 +93,9 @@ export default function HourSlider({ plan, departure, onHourChange }: Props) {
           </Box>
         ))}
       </Box>
+      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+        Squares show the wider area. Route miles use checkpoints at the truck's arrival time.
+      </Typography>
     </Paper>
   )
 }

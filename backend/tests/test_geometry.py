@@ -1,6 +1,13 @@
 import pytest
 
-from trips.domain.geometry import corridor_cells, cumulative_lengths, elapsed_at, point_at_fraction, snap
+from trips.domain.geometry import (
+    corridor_cells,
+    cumulative_lengths,
+    elapsed_at,
+    heat_cell,
+    point_at_fraction,
+    snap,
+)
 
 
 def test_point_at_fraction_stays_on_route():
@@ -21,3 +28,9 @@ def test_snap_aligns_to_absolute_grid():
 
 def test_corridor_is_route_cells_plus_one_ring():
     assert len(corridor_cells([[(10.0, 10.0)]], 1.0)) == 9
+
+
+@pytest.mark.parametrize("cell_deg", [0.25, 0.5, 1.0, 2.0])
+def test_heat_cell_matches_the_corridor_squares(cell_deg):
+    point = (32.77798, -96.79622)
+    assert heat_cell(point, cell_deg) in corridor_cells([[point]], cell_deg)

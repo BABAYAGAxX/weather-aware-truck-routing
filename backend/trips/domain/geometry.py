@@ -55,6 +55,12 @@ def snap(point: Point) -> Point:
     return (round(lat, 1), round(lon, 1))
 
 
+def heat_cell(point: Point, cell_deg: float) -> Point:
+    """The heatmap square a point falls in, as the corridor_cells value for that square."""
+    lat, lon = point
+    return (round(round(lat / cell_deg) * cell_deg, 2), round(round(lon / cell_deg) * cell_deg, 2))
+
+
 def corridor_cells(routes: Sequence[Sequence[Point]], cell_deg: float) -> set[Point]:
     """Grid squares the routes pass through, plus one ring of squares around them."""
     on_route = {(round(lat / cell_deg), round(lon / cell_deg)) for route in routes for lat, lon in route}
