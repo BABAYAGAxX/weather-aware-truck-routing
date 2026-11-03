@@ -7,6 +7,7 @@ import { planTrip, type Plan, type PlanRequest } from './api'
 import MapUnavailable from './components/MapUnavailable'
 import RouteCards from './components/RouteCards'
 import TripForm from './components/TripForm'
+import { PANEL_SPACE, panelGap } from './panelStyles'
 import { UI_COLORS } from './risk'
 
 // MapLibre is large, so it downloads after the form has painted. If that fails, the form stays on the page.
@@ -52,7 +53,11 @@ export default function App() {
           p: 2.25,
           display: 'flex',
           flexDirection: 'column',
-          gap: 1.75,
+          // Only the side-by-side layout (MUI's md breakpoint, 900px) has a fixed height to fill.
+          '@media (min-width: 900px)': { '--panel-space': PANEL_SPACE },
+          gap: panelGap(14),
+          // Height the gaps cannot use goes between the header, form and cards. Before a search the form stays at the top.
+          justifyContent: { md: plan ? 'space-between' : 'flex-start' },
           overflowY: { md: 'auto' },
           maxHeight: { md: '100vh' },
           scrollbarWidth: 'thin',

@@ -8,6 +8,7 @@ import Collapse from '@mui/material/Collapse'
 import Typography from '@mui/material/Typography'
 import type { Route } from '../api'
 import { formatDayTime, formatDuration, formatMiles } from '../format'
+import { panelGap } from '../panelStyles'
 import { RISK_COLORS, RISK_LABELS, ROUTE_COLORS, UI_COLORS } from '../risk'
 
 interface Props {
@@ -69,7 +70,7 @@ export default function RouteCards({ routes, selectedId, intervalMiles, onSelect
   const anyRecommended = routes.some((route) => route.recommended)
 
   return (
-    <Box component="section" aria-label="Route comparison" sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+    <Box component="section" aria-label="Route comparison" sx={{ display: 'flex', flexDirection: 'column', gap: panelGap(8) }}>
       {!anyRecommended && (
         <Alert severity="warning">
           <Typography component="span" sx={{ fontWeight: 600, display: 'block' }}>

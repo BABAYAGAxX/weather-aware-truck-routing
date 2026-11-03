@@ -7,7 +7,7 @@ import ToggleButton from '@mui/material/ToggleButton'
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 import Typography from '@mui/material/Typography'
 import type { Interval, Place, PlanRequest } from '../api'
-import { fieldSx } from '../panelStyles'
+import { fieldSx, panelGap } from '../panelStyles'
 import { UI_COLORS } from '../risk'
 import PlaceField from './PlaceField'
 
@@ -44,7 +44,7 @@ export default function TripForm({ departure, onDepartureChange, onSubmit, loadi
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: panelGap(10) }}>
       <PlaceField label="From" value={origin} onChange={setOrigin} />
       <PlaceField label="To" value={destination} onChange={setDestination} />
       {/* One row, so all three route cards fit under the form on a laptop screen. */}
